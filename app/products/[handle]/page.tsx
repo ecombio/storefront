@@ -1,0 +1,139 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+
+import { ProductViewedTracker } from "@/components/analytics/trackers";
+import { ProductDetailSection } from "@/components/product-detail/product-detail-section";
+import { RelatedProductsSection } from "@/components/product/related-products-section";
+import { Container } from "@/components/ui/container";
+import { Page } from "@/components/ui/page";
+import { Sections } from "@/components/ui/sections";
+import { shopConfig } from "@/lib/config";
+import { defaultSelectedOptions, parseSelectedOptions, toSelectedOptionList } from "@/lib/product";
+import { getProducts, getProduct, getProductVariant } from "@/lib/product/server";
+import { type SelectedOptions } from "@/lib/product/types";
+import type { ProductVariant } from "@/lib/product/types";
+import { buildAlternates, buildOpenGraph } from "@/lib/seo";
+
+const PLACEHOLDER_HANDLE = "__placeholder__";
+
+async function buildProductMetadata(handle: string, canonicalPath: string): Promise<Metadata> {
+  const product = await getProduct({
+    handle,
+  });
+  if (!product) notFound();
+  const images = product.featuredImage
+    ? [
+        {
+          url: product.featuredImage.url,
+          width: product.featuredImage.width,
+          height: product.featuredImage.height,
+          alt: product.featuredImage.altText,
+        },
+      ]
+    : ["/og-default.png"];
+  return {
+    title: product.seo.title,
+    description: product.seo.description,
+    alternates: buildAlternates({
+      pathname: canonicalPath,
+    }),
+    openGraph: buildOpenGraph({
+      title: product.seo.title,
+      description: product.seo.description,
+      url: canonicalPath,
+      images,
+    }),
+    twitter: {
+      card: "summary_large_image",
+      title: product.seo.title,
+      description: product.seo.description,
+      images,
+    },
+  };
+}
+
+export async function generateStaticParams() {
+  try {
+    const { products } = await getProducts({ limit: 1 });
+    const first = products[0];
+    return [{ handle: first ? first.handle : PLACEHOLDER_HANDLE }];
+  } catch {
+    return [{ handle: PLACEHOLDER_HANDLE }];
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/products/[handle]">): Promise<Metadata> {
+  const { handle } = await params;
+  if (handle === PLACEHOLDER_HANDLE) return {};
+  return buildProductMetadata(handle, `/products/${handle}`);
+}
+
+export const instant = false;
+
+export default async function ProductPage({
+  params,
+  searchParams,
+}: PageProps<"/products/[handle]">) {
+  const { handle } = await params;
+  if (handle === PLACEHOLDER_HANDLE) notFound();
+  const product = await getProduct({
+    handle,
+  });
+  if (!product) notFound();
+
+  // Keep selection separate from the variant query so the static shell stays coherent and the picker never waits on Shopify.
+  const selectedOptionsPromise: Promise<SelectedOptions> = searchParams.then(
+    (resolvedSearchParams) => ({
+      ...defaultSelectedOptions(product),
+      ...parseSelectedOptions(product.options, resolvedSearchParams ?? {}),
+    }),
+  );
+  const variantPromise: Promise<ProductVariant | undefined> = searchParams.then(
+    (resolvedSearchParams) => {
+      if (
+        Object.keys(parseSelectedOptions(product.options, resolvedSearchParams ?? {})).length === 0
+      ) {
+        return product.defaultVariant;
+      }
+      return getProductVariant({
+        handle,
+        selectedOptions: toSelectedOptionList({
+          ...defaultSelectedOptions(product),
+          ...parseSelectedOptions(product.options, resolvedSearchParams ?? {}),
+        }),
+      });
+    },
+  );
+  return (
+    <>
+      <Suspense fallback={null}>
+        <ProductViewedTracker
+          product={{
+            handle: product.handle,
+            id: product.id,
+            title: product.title,
+            vendor: product.vendor,
+          }}
+          variantPromise={variantPromise}
+        />
+      </Suspense>
+      <Page className="pt-0">
+        <Container className="bg-background">
+          <Sections>
+            <ProductDetailSection
+              product={product}
+              selectedOptionsPromise={selectedOptionsPromise}
+              variantPromise={variantPromise}
+            />
+            {shopConfig.pdp.relatedProducts.isEnabled ? (
+              <RelatedProductsSection handle={handle} limit={4} />
+            ) : null}
+          </Sections>
+        </Container>
+      </Page>
+    </>
+  );
+}

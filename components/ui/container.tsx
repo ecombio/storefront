@@ -1,0 +1,10 @@
+import { cn } from "cn";
+import type { ComponentPropsWithRef } from "react";
+
+export function Container({ children, className, ...props }: ComponentPropsWithRef<"section">) {
+  return (
+    <section className={cn("mx-auto w-full max-w-384 px-5 lg:px-10", className)} {...props}>
+      {children}
+    </section>
+  );
+}
