@@ -18,7 +18,7 @@ export async function GET(): Promise<Response> {
     return new Response(
       `# ${escapeMarkdown(name)}
 
-A Storefront Built on Vercel Shop. Agent-ready commerce, powered by Shopify, Next, and Eve.
+Shop electric bikes at Ecombio. Electric bikes for commuting, trails, and everything in between.
 
 ## Browse
 

@@ -1,7 +1,9 @@
 import type { ShopConfig } from "./types";
 
+const productionUrl = "https://ecombio.com";
+
 const defaultUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  ? productionUrl
   : "http://localhost:3000";
 
 export const shopConfig = {
@@ -63,7 +65,7 @@ export const shopConfig = {
     isEnabled: true,
   },
   site: {
-    name: "Vercel Shop",
+    name: "Ecombio",
     url: defaultUrl,
   },
 } satisfies ShopConfig;
