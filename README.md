@@ -85,6 +85,7 @@ Sign-in uses Shopify Customer Accounts through a confidential Customer Account A
 - **Collections and search:** `/collections/[handle]` and `/search` have no configuration toggles. Results are live, not cached. Collections and products must be published to the Headless channel to appear. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
 - **Content pages:** Shopify Pages appear at `/pages/[handle]`, policies at `/policies/[handle]`, and blogs at `/blogs/[blogHandle]`. All are edited in Shopify. The webhook handler does not refresh them, so edits can stay cached until the content is revalidated. There is no `/blogs` index, so link to a specific blog. A policy only has a URL and a footer link once it has content. Unknown handles return a 404 (Shopify redirects are disabled).
 - **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Checkout is hosted by Shopify, currently on `ecombio.myshopify.com`. Shopify decides prices, discounts, and availability.
+
 ## Environment variables
 
 Values live in Vercel (Production and Preview) and `.env.local`, never in git.
