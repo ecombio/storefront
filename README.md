@@ -1,10 +1,23 @@
+# Ecombio Storefront
+
+Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
+
+| Item | Where |
+| --- | --- |
+| Live site | https://ecombio.com (`www` redirects to it) |
+| GitHub repo | https://github.com/ecombio/storefront (branch `main`) |
+| Vercel project | https://vercel.com/ecombiology/storefront |
+| Shopify store | `ecombio.myshopify.com` |
+| Checkout | Hosted by Shopify, currently on `ecombio.myshopify.com` |
+| Template docs | https://shop-docs.labs.vercel.dev |
+
 ## Updating the GitHub repository
 
 Pushes to `main` deploy to production on Vercel automatically, so only push work you are happy to publish.
 
-Plain `git push` fails silently on this machine (exit code 128) because git has no working GitHub credential helper. Use the push command in step 4 instead.
+Plain `git push` exits with code 128 on this machine because the GitHub CLI credential helper hands nothing to git. Step 5 passes the `gh` token to git directly instead. The root cause is not fixed; once it is, `git push origin main` will do.
 
-Run everything in PowerShell. Paste one block at a time, copy only the command and never the `PS C:\...>` prompt, and never paste a token anywhere.
+Run everything in PowerShell. Paste one block at a time, copy only the command and never the `PS C:\...>` prompt, and never paste a token or secret anywhere, including chat.
 
 1. Go to the project folder and see what changed:
 
@@ -13,19 +26,28 @@ cd C:\Users\Admin\Ecombio\Storefront
 git status
 ```
 
-2. Stage only the files you mean to commit. Avoid `git add .`, and never stage `.env.local`:
+2. For code changes, check the build locally before pushing (skip for README-only changes):
+
+```powershell
+pnpm lint
+pnpm build
+```
+
+`pnpm build` needs the required variables in `.env.local`. With customer accounts enabled, the build fails if any of the three auth variables is missing, on Vercel as well as locally.
+
+3. Stage only the files you changed. Do not use `git add .`, and never stage `.env.local`. Leave the untracked `.devin/` folder out:
 
 ```powershell
 git add README.md
 ```
 
-3. Commit with a short message:
+4. Commit with a short message:
 
 ```powershell
 git commit -m "Describe the change"
 ```
 
-4. Push using the GitHub CLI login:
+5. Push using the GitHub CLI login:
 
 ```powershell
 $t = gh auth token
@@ -33,25 +55,22 @@ $h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.
 git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
 ```
 
-5. Confirm it landed. The two hashes should match:
+6. Confirm it landed. The two hashes should match:
 
 ```powershell
 git ls-remote origin main
 git log --oneline -1
 ```
 
-6. Check the build at https://vercel.com/ecombiology/storefront/deployments. If a build fails, the previous deployment stays live. Read the build log, fix the problem, and push again. If the cause was an environment variable, fix it in Vercel and use Redeploy from the deployment's menu.
+7. Watch the build at https://vercel.com/ecombiology/storefront/deployments. If a build fails, the previous deployment stays live. Open the build log, fix the cause, and push again. If the cause was an environment variable, fix it in Vercel and use **Redeploy** from the deployment's menu (no new push needed).
 
-7. Close the PowerShell window so the token variable is cleared.
+8. Close the PowerShell window so the token variable is cleared.
 
-If the push is rejected with a 401 or a permission error, run `gh auth status`. If it shows you logged out, run `gh auth login`, then try step 4 again. If the remote has newer commits, run `git pull --rebase origin main` and push again.
+If the push fails:
 
----
-# Ecombio Storefront
-
-Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel.
-
-Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template. See `LICENSE`.
+- **401 or permission error:** run `gh auth status`. If you are logged out, run `gh auth login`, then repeat step 5.
+- **Remote has newer commits:** run `git pull --rebase origin main`, then repeat step 5.
+- **No output at all:** PowerShell can hide git's error text. Run `git push origin main 2>&1 | Out-String` to see it.
 
 ## Local development
 
@@ -61,45 +80,84 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Set `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` and `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` in `.env.local`. Never commit `.env.local`.
-
-Customer sign-in needs a public HTTPS origin, so test it on production or through an HTTPS tunnel, not plain `localhost`.
+Fill in `.env.local` with the variables listed below. Never commit it. Customer sign-in needs a public HTTPS origin, so test it on production or through an HTTPS tunnel, not plain `localhost`. Other commands: `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm format`.
 
 ## Configuration
 
-Feature flags and site identity live in `lib/config/index.ts`. The production URL is `https://ecombio.com` (root domain; `www` redirects to it). Customer accounts are enabled. The Shop Agent chat assistant, analytics, and bot protection are currently disabled.
+Feature flags and site identity live in `lib/config/index.ts`. Keep config keys in alphabetical order.
+
+| Feature | State |
+| --- | --- |
+| Customer accounts (`auth`) | Enabled |
+| Search | Enabled |
+| Product page: bundles, Buy with Shop, complementary products, quantity picker, related products | Enabled |
+| Shop Agent (`agent`), analytics, bot protection, browser agents, Shopify redirects | Disabled |
+
+Localization is US / EN / `en-US`. The site URL is `https://ecombio.com`; other environments fall back to `http://localhost:3000`.
+
+The Shop Agent is a public chat assistant and every message can incur model charges. Enable it only with a card on file in Vercel AI Gateway, spending limits, and bot protection.
 
 ## Customer accounts
 
-Sign-in uses Shopify Customer Accounts through a confidential Customer Account API client on the Headless storefront.
+Sign-in uses Shopify Customer Accounts through a **Confidential** Customer Account API client on the Headless storefront (a Public client has no secret and will not work).
 
-- Callback URI: `https://ecombio.com/account/authorize`
-- Logout URI: `https://ecombio.com/`
-- Shopify does not allow wildcard URIs, so register every preview or tunnel origin that needs sign-in.
+Setup, already done:
+
+1. Shopify Admin, Settings, Customer accounts: choose new customer accounts.
+2. Sales channels, Headless, the storefront, Customer Account API: set the client type to Confidential.
+3. Callback URI `https://ecombio.com/account/authorize` and logout URI `https://ecombio.com/`.
+4. Set the three auth variables in Vercel, set `auth.isEnabled` to `true`, and deploy.
+
+Rules:
+
+- Shopify does not allow wildcard URIs. Register every preview or tunnel origin that needs sign-in.
+- Secrets are server-only and must be identical across every instance of a deployment.
 - Rotating `CUSTOMER_ACCOUNT_SESSION_SECRET` signs out all customers.
+- Generate a session secret without printing it, then paste it straight into Vercel:
 
-## Pages and content
+```powershell
+$b = New-Object byte[] 32; (New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes($b); [Convert]::ToBase64String($b) | Set-Clipboard
+```
 
-- **Home:** the headline and description are fixed copy in the code. The grid shows the first eight products from the relevance-ranked `/collections/all` catalog, not a hand-picked list. To control what is featured, point the grid at a specific Shopify collection.
-- **Product pages:** bundles, complementary products, related products, Buy with Shop, and the quantity picker are enabled in `lib/config/index.ts`. Bundles and complementary products show nothing until they are set up in Shopify. Product data is cached and refreshed by Shopify webhooks, so edits may lag until webhooks are registered.
-- **Collections and search:** `/collections/[handle]` and `/search` have no configuration toggles. Results are live, not cached. Collections and products must be published to the Headless channel to appear. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
-- **Content pages:** Shopify Pages appear at `/pages/[handle]`, policies at `/policies/[handle]`, and blogs at `/blogs/[blogHandle]`. All are edited in Shopify. The webhook handler does not refresh them, so edits can stay cached until the content is revalidated. There is no `/blogs` index, so link to a specific blog. A policy only has a URL and a footer link once it has content. Unknown handles return a 404 (Shopify redirects are disabled).
-- **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Checkout is hosted by Shopify, currently on `ecombio.myshopify.com`. Shopify decides prices, discounts, and availability.
+Test in an incognito window: open `/account/login`, sign in with the emailed one-time code, check `/account/profile`, `/account/orders`, and `/account/addresses`, then sign out and confirm you return to the storefront as a guest.
+
+If sign-in fails, compare the deployed origin, callback URI, logout URI, store domain, client ID, and client secret character for character. Stray spaces, quotes, or a trailing slash are the usual cause.
 
 ## Environment variables
 
-Values live in Vercel (Production and Preview) and `.env.local`, never in git.
+Values live in Vercel (Production and Preview) and `.env.local`, never in git. Mark secrets **Sensitive** in Vercel. Changes only apply to new deployments, so redeploy after editing. Every variable the code reads should have a row in `.env.example`.
 
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` | Required. Shopify store domain. |
 | `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Required. Public Storefront API token. |
 | `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID` | Cart attribution for the Headless storefront. |
-| `CUSTOMER_ACCOUNT_SESSION_SECRET` | Required while customer accounts are enabled. Session encryption secret. |
+| `CUSTOMER_ACCOUNT_SESSION_SECRET` | Required while customer accounts are enabled. Session encryption secret you generate. |
 | `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` | Required while customer accounts are enabled. Confidential client ID. |
 | `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET` | Required while customer accounts are enabled. Confidential client secret. |
 | `SHOPIFY_WEBHOOK_SECRET` | Enables `POST /api/webhooks/shopify` (returns 404 without it). |
 | `AI_GATEWAY_API_KEY` | Only needed if Shop Agent is enabled. |
+
+## How the storefront works
+
+- **Home:** fixed headline and description in the code, then the first eight products from the relevance-ranked `/collections/all` catalog. It is not a hand-picked list; point the grid at a Shopify collection to control it.
+- **Product pages:** variant choices are in the URL. Data is cached and refreshed by Shopify webhooks, so edits can lag until webhooks are registered. Bundles and complementary products show nothing until they exist in Shopify.
+- **Collections and search:** `/collections/[handle]` and `/search` have no toggles. Results are live, not cached. Collections and products must be published to the Headless channel. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
+- **Product card:** one shared tile for every grid, so a visual change affects every page. Assign an image to each color variant in Shopify so filtered cards show the matching color.
+- **Content pages:** Shopify Pages at `/pages/[handle]`, policies at `/policies/[handle]`, blogs at `/blogs/[blogHandle]`. Edit them in Shopify. The webhook handler does not refresh them, so edits can stay cached. There is no `/blogs` index; link to a specific blog. Unknown handles return a 404.
+- **Navigation:** the header has a single Shop link in code, plus search, cart, and the account link. To manage menus in Shopify instead, use the `/vercel-shop:enable-shopify-menus` skill from a coding agent, then review the diff and test before pushing.
+- **Footer:** the store name and a link to every Shopify policy that has content. Social links and menu columns are optional.
+- **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Shopify decides prices, discounts, and availability, and hosts checkout.
+
+## Checkout domain
+
+Checkout runs on `ecombio.myshopify.com`. A branded `checkout.ecombio.com` is planned:
+
+1. Cloudflare DNS: CNAME `checkout` to `shops.myshopify.com`, DNS only (grey cloud). Verify with `Resolve-DnsName checkout.ecombio.com -Type CNAME`.
+2. Shopify Admin, Settings, Domains, Connect existing domain: enter `checkout.ecombio.com` and verify.
+3. Decide whether to make it the primary domain. Checkout follows the primary domain, and generated Shopify links (discount links, sitemaps, app links) may then point at the checkout subdomain instead of `ecombio.com`.
+
+Do the test order on the current checkout first. The customer-account callback and logout URIs stay on `https://ecombio.com/...` either way.
 
 ## Launch status
 
@@ -118,16 +176,20 @@ Remaining:
 - [ ] Sign-in test: log in at `/account/login`, check profile, orders, addresses, and logout
 - [ ] Cart test: add, change quantity, remove, discount code, cart carries over after sign-in
 - [ ] Checkout test: full test order on the live site, including Shop Pay
-- [ ] Branded checkout domain: connect `checkout.ecombio.com` in Shopify (Settings, Domains); decide whether to make it primary
+- [ ] Branded checkout domain: finish `checkout.ecombio.com` (see Checkout domain)
 - [ ] Webhooks: register product and collection topics in Shopify (JSON) pointing to `https://ecombio.com/api/webhooks/shopify`, then set `SHOPIFY_WEBHOOK_SECRET` in Vercel and redeploy
-- [ ] Shopify fixes: contact-information policy email, product description typo, confirm collections are published to Headless
+- [ ] Product pages: set up bundles and complementary products in Shopify, or disable their flags in `lib/config/index.ts`
+- [ ] Home page: check the headline copy and which eight products show; consider featuring a collection
+- [ ] Content: fill in every store policy, check the footer links, and confirm edits (such as the contact-information email) appear on the live site
+- [ ] Shopify fixes: product description typo, confirm collections are published to Headless
 - [ ] DNS: DMARC record and the `store.ecombio.com` proxy setting
-- [ ] Product pages: bundles and complementary products need data in Shopify; set them up or disable their flags in `lib/config/index.ts` before launch
-- [ ] Home page: check the headline copy and which eight products show, and consider featuring a Shopify collection
-- [ ] Content: fill in every store policy, check the footer links, and confirm edits (such as the contact-information email) show on the live site
+- [ ] Check `.env.example` lists the auth variables and `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID`
+- [ ] Spot-check `/sitemap.xml`, `/robots.txt`, and `/llms.txt` on the live site
+- [ ] Remove `AI_GATEWAY_API_KEY` from Vercel until Shop Agent is enabled
 
 Later / optional:
 
-- [ ] Shop Agent (needs a card on file in Vercel AI Gateway, spending limits, and bot protection)
+- [ ] Shop Agent (card on file in Vercel AI Gateway, spending limits, bot protection)
 - [ ] Vercel Web Analytics
+- [ ] Shopify-managed navigation and footer menus
 - [ ] "Pairs Well With" products and bundles in Shopify
