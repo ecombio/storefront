@@ -78,6 +78,13 @@ Sign-in uses Shopify Customer Accounts through a confidential Customer Account A
 - Shopify does not allow wildcard URIs, so register every preview or tunnel origin that needs sign-in.
 - Rotating `CUSTOMER_ACCOUNT_SESSION_SECRET` signs out all customers.
 
+## Pages and content
+
+- **Home:** the headline and description are fixed copy in the code. The grid shows the first eight products from the relevance-ranked `/collections/all` catalog, not a hand-picked list. To control what is featured, point the grid at a specific Shopify collection.
+- **Product pages:** bundles, complementary products, related products, Buy with Shop, and the quantity picker are enabled in `lib/config/index.ts`. Bundles and complementary products show nothing until they are set up in Shopify. Product data is cached and refreshed by Shopify webhooks, so edits may lag until webhooks are registered.
+- **Collections and search:** `/collections/[handle]` and `/search` have no configuration toggles. Results are live, not cached. Collections and products must be published to the Headless channel to appear. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
+- **Content pages:** Shopify Pages appear at `/pages/[handle]`, policies at `/policies/[handle]`, and blogs at `/blogs/[blogHandle]`. All are edited in Shopify. The webhook handler does not refresh them, so edits can stay cached until the content is revalidated. There is no `/blogs` index, so link to a specific blog. A policy only has a URL and a footer link once it has content. Unknown handles return a 404 (Shopify redirects are disabled).
+- **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Checkout is hosted by Shopify, currently on `ecombio.myshopify.com`. Shopify decides prices, discounts, and availability.
 ## Environment variables
 
 Values live in Vercel (Production and Preview) and `.env.local`, never in git.
@@ -114,6 +121,9 @@ Remaining:
 - [ ] Webhooks: register product and collection topics in Shopify (JSON) pointing to `https://ecombio.com/api/webhooks/shopify`, then set `SHOPIFY_WEBHOOK_SECRET` in Vercel and redeploy
 - [ ] Shopify fixes: contact-information policy email, product description typo, confirm collections are published to Headless
 - [ ] DNS: DMARC record and the `store.ecombio.com` proxy setting
+- [ ] Product pages: bundles and complementary products need data in Shopify; set them up or disable their flags in `lib/config/index.ts` before launch
+- [ ] Home page: check the headline copy and which eight products show, and consider featuring a Shopify collection
+- [ ] Content: fill in every store policy, check the footer links, and confirm edits (such as the contact-information email) show on the live site
 
 Later / optional:
 
