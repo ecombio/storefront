@@ -36,7 +36,7 @@ pnpm build
 
 `pnpm build` needs the required variables in `.env.local`. With customer accounts enabled, the build fails if any of the three auth variables is missing, on Vercel as well as locally.
 
-3. Stage only the files you changed. Do not use `git add .`, and never stage `.env.local`. Leave the untracked `.devin/` folder out:
+3. Stage only the files you changed. Do not use `git add .`, and never stage `.env.local`. Read `git status` before staging. `.devin/wiki.json` is tracked, so stage it when it changes:
 
 ```powershell
 git add README.md
@@ -51,15 +51,16 @@ git commit -m "Describe the change"
 5. Push using the GitHub CLI login:
 
 ```powershell
+$b = git branch --show-current   # pushes the branch you are on
 $t = gh auth token
 $h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
-git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
+git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin $b
 ```
 
 6. Confirm it landed. The two hashes should match:
 
 ```powershell
-git ls-remote origin main
+git ls-remote origin $b
 git log --oneline -1
 ```
 
@@ -72,6 +73,34 @@ If the push fails:
 - **401 or permission error:** run `gh auth status`. If you are logged out, run `gh auth login`, then repeat step 5.
 - **Remote has newer commits:** run `git pull --rebase origin main`, then repeat step 5.
 - **No output at all:** PowerShell can hide git's error text. Run `git push origin main 2>&1 | Out-String` to see it.
+
+## Working on a branch
+
+Push to `main` only for small, finished changes. Anything bigger (new routes, languages, redesigns) goes on a branch so `main` and production stay untouched.
+
+```powershell
+git switch -c feature/short-name
+```
+
+Commit with steps 3 and 4 above, then run step 5 while on the branch. It pushes the branch you are on, not `main`. Vercel builds each pushed branch as a preview deployment (find it on the Vercel deployments page). Customer sign-in on a preview only works if that preview's origin is registered in Shopify.
+
+To merge, open a pull request, review the diff and the preview, then merge it on GitHub. Merging changes `main` and deploys to production:
+
+```powershell
+gh pr create --base main --head (git branch --show-current) --fill
+```
+
+After the merge, bring your local `main` up to date and delete the branch (use `-D` instead of `-d` if you squash-merged):
+
+```powershell
+git switch main
+$t = gh auth token
+$h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
+git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" pull --rebase origin main
+git branch -d feature/short-name
+```
+
+Then close the PowerShell window so the token variable is cleared.
 
 ## Local development
 
