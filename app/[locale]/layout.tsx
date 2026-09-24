@@ -2,7 +2,7 @@ import { BotIdClient } from "botid/client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import "./globals.css";
+import "../globals.css";
 import { Suspense } from "react";
 
 import { ActionBar } from "@/components/action-bar";
@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { botIdProtectedRoutes } from "@/lib/botid";
 import { seedCartData } from "@/lib/cart/server";
 import { shopConfig } from "@/lib/config";
+import { locales } from "@/lib/i18n";
 import { buildAlternates } from "@/lib/seo";
 
 const geistSans = Geist({
@@ -29,7 +30,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/[locale]">) {
   // Un-awaited: the promise streams to the client provider; never block the shell on it.
   const cartData = seedCartData();
   return (
@@ -81,3 +82,5 @@ export const generateMetadata = async (): Promise<Metadata> => {
     },
   };
 };
+
+export const generateStaticParams = async () => locales.map((locale) => ({ locale }));

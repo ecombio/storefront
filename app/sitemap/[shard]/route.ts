@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { shopConfig } from "@/lib/config";
+import { defaultLocale } from "@/lib/i18n";
 import { getShopPolicies } from "@/lib/policies/server";
 import { getShopifySitemapPage } from "@/lib/seo/server";
 import { type ShopifySitemapType } from "@/lib/shopify/operations/sitemap/types";
@@ -10,7 +11,7 @@ function escapeXml(value: string): string {
 }
 
 function toAbsoluteUrl(pathname: string): string {
-  return `${shopConfig.site.url}${pathname}`;
+  return `${shopConfig.site.url}/${defaultLocale}${pathname === "/" ? "" : pathname}`;
 }
 
 function urlsetWrap(body: string): string {

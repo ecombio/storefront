@@ -42,7 +42,9 @@ const ALL_PRODUCTS_SORT_EXCLUDE = [
   "title-descending",
 ];
 
-export default async function AllProductsPage({ searchParams }: PageProps<"/collections/all">) {
+export default async function AllProductsPage({
+  searchParams,
+}: PageProps<"/[locale]/collections/all">) {
   const collection = await getAllProductsCollection();
 
   // Keep searchParams unawaited so the collection header stays in the static shell.

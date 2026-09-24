@@ -1,4 +1,5 @@
 import { shopConfig } from "@/lib/config";
+import { enabledLocales } from "@/lib/i18n";
 
 import type { AcceptEntry, NegotiatedRepresentation, Representation } from "./types";
 
@@ -87,7 +88,16 @@ export function appendVaryAccept(headers: Headers): void {
   if (!values.includes("accept")) headers.set("Vary", `${vary}, Accept`);
 }
 
-export function getMarkdownPath(pathname: string): string | null {
+function stripLocale(pathname: string): string {
+  for (const locale of enabledLocales) {
+    if (pathname === `/${locale}`) return "/";
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
+  }
+  return pathname;
+}
+
+export function getMarkdownPath(rawPathname: string): string | null {
+  const pathname = stripLocale(rawPathname);
   if (pathname === "/") return "/md";
   if (pathname === "/search") return "/md/search";
   if (pathname.startsWith("/collections/")) return `/md${pathname}`;

@@ -65,7 +65,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/products/[handle]">): Promise<Metadata> {
+}: PageProps<"/[locale]/products/[handle]">): Promise<Metadata> {
   const { handle } = await params;
   if (handle === PLACEHOLDER_HANDLE) return {};
   return buildProductMetadata(handle, `/products/${handle}`);
@@ -76,7 +76,7 @@ export const instant = false;
 export default async function ProductPage({
   params,
   searchParams,
-}: PageProps<"/products/[handle]">) {
+}: PageProps<"/[locale]/products/[handle]">) {
   const { handle } = await params;
   if (handle === PLACEHOLDER_HANDLE) notFound();
   const product = await getProduct({

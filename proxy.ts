@@ -6,7 +6,8 @@ import {
   CUSTOMER_ACCOUNT_LOGOUT_PATH,
   CUSTOMER_ACCOUNT_REFRESH_PATH,
 } from "@shopify/hydrogen/customer-account";
-import { NextResponse, type NextRequest } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   createCustomerRequestContext,
@@ -16,8 +17,12 @@ import {
 } from "@/lib/auth/server";
 import { cartHandlers, createCustomerCartHandlers } from "@/lib/cart/server";
 import { shopConfig } from "@/lib/config";
-import { appendVaryAccept, negotiateRepresentation } from "@/lib/markdown/representation";
-import { getMarkdownPath } from "@/lib/markdown/representation";
+import { routing } from "@/lib/i18n/routing";
+import {
+  appendVaryAccept,
+  getMarkdownPath,
+  negotiateRepresentation,
+} from "@/lib/markdown/representation";
 import { predictiveSearchHandlers } from "@/lib/search/server";
 import { SHOPIFY_ROUTE_TEMPLATES } from "@/lib/shopify/routing";
 import { createRequestStorefrontClient } from "@/lib/shopify/storefront/server";
@@ -35,6 +40,31 @@ const NOOP_SESSION_MANAGER = {
   removeSessionItem: () => {},
   setSessionItem: () => {},
 };
+
+const handleI18n = createMiddleware(routing);
+
+// Routes that must never get a locale prefix.
+const UNLOCALIZED_PREFIXES = ["/api", "/__shopify", "/md", "/sitemap", "/agent", "/.well-known"];
+const SHOPIFY_CART_FILES = /^\/cart(?:\.(?:js|json)|\/(?:add|update|change|clear)\.(?:js|json))$/;
+
+function isUnlocalizedPath(pathname: string): boolean {
+  return (
+    SHOPIFY_CART_FILES.test(pathname) ||
+    UNLOCALIZED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  );
+}
+
+function normalizeRewrite(request: NextRequest, response: Response): Response {
+  if (!response.ok) return response;
+  const rewriteHeader = response.headers.get("x-middleware-rewrite");
+  if (!rewriteHeader) return response;
+
+  const rewriteTarget = new URL(rewriteHeader, request.url);
+  const [, ...segments] = rewriteTarget.pathname.split("/");
+  const normalized = new URL(`/${segments.filter(Boolean).join("/")}`, request.url);
+  normalized.search = rewriteTarget.search;
+  return NextResponse.rewrite(normalized, { headers: response.headers });
+}
 
 export async function proxy(request: NextRequest): Promise<Response> {
   const pathname = request.nextUrl.pathname;
@@ -106,12 +136,22 @@ export async function proxy(request: NextRequest): Promise<Response> {
     }
   }
 
-  const response = NextResponse.next({
-    request: { headers: requestContext.getForwardedRequestHeaders() },
+  if (isUnlocalizedPath(pathname)) {
+    const response = NextResponse.next({
+      request: { headers: requestContext.getForwardedRequestHeaders() },
+    });
+    if (markdownPath) appendVaryAccept(response.headers);
+    requestContext.applyResponseHeaders(response.headers);
+    return response;
+  }
+
+  const i18nRequest = new NextRequest(request, {
+    headers: requestContext.getForwardedRequestHeaders(),
   });
-  if (markdownPath) appendVaryAccept(response.headers);
-  requestContext.applyResponseHeaders(response.headers);
-  return response;
+  const i18nResponse = handleI18n(i18nRequest);
+  if (markdownPath) appendVaryAccept(i18nResponse.headers);
+  requestContext.applyResponseHeaders(i18nResponse.headers);
+  return normalizeRewrite(request, i18nResponse);
 }
 
 export const config = {
@@ -125,6 +165,9 @@ export const config = {
     "/agent/:action(handoff|buyer-claims).:format",
     "/cart.:format(js|json)",
     "/cart/:operation(add|update|change|clear).:format(js|json)",
+    "/:locale([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)/agent/:action(handoff|buyer-claims).:format",
+    "/:locale([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)/cart.:format(js|json)",
+    "/:locale([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)/cart/:operation(add|update|change|clear).:format(js|json)",
     "/((?!api|eve(?:/|$)|_eve_internal(?:/|$)|_next/static|_next/image|_next/data|_vercel|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
     "/.well-known/:path*",
   ],
