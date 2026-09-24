@@ -10,6 +10,7 @@ Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with N
 | Shopify store | `ecombio.myshopify.com` |
 | Checkout | Hosted by Shopify, currently on `ecombio.myshopify.com` |
 | Template docs | https://shop-docs.labs.vercel.dev |
+| Routes reference | https://shop-docs.labs.vercel.dev/docs/reference/routes |
 
 ## Updating the GitHub repository
 
@@ -204,6 +205,7 @@ Done:
 - [x] Cloudflare DNS and email records reviewed
 - [x] Ecombio branding and root-domain canonicals
 - [x] Customer accounts: Shopify client, callback and logout URIs, env vars, and deployment
+- [x] Webhooks: product and collection webhooks registered in Shopify (JSON, API version 2026-07) to https://ecombio.com/api/webhooks/shopify; SHOPIFY_WEBHOOK_SECRET set in Production; unsigned requests return 401
 
 Remaining:
 
@@ -211,7 +213,6 @@ Remaining:
 - [ ] Cart test: add, change quantity, remove, discount code, cart carries over after sign-in
 - [ ] Checkout test: full test order on the live site, including Shop Pay
 - [ ] Branded checkout domain: finish `checkout.ecombio.com` (see Checkout domain)
-- [ ] Webhooks: register product and collection topics in Shopify (JSON) pointing to `https://ecombio.com/api/webhooks/shopify`, then set `SHOPIFY_WEBHOOK_SECRET` in Vercel and redeploy
 - [ ] Product pages: set up bundles and complementary products in Shopify, or disable their flags in `lib/config/index.ts`
 - [ ] Home page: check the headline copy and which eight products show; consider featuring a collection
 - [ ] Content: fill in every store policy, check the footer links, and confirm edits (such as the contact-information email) appear on the live site
