@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { Container } from "@/components/ui/container";
 import { shopConfig } from "@/lib/config";
+import { getMenu } from "@/lib/menu/server";
 import type { MenuItem } from "@/lib/shopify/transforms/menu/types";
 
 import { NavAccount, NavAccountFallback } from "./account";
@@ -12,10 +13,21 @@ import { MobileMenu } from "./mobile-menu";
 import { QuickLinks } from "./quick-links";
 import { SearchModal } from "./search-modal";
 
-export function Nav() {
-  const items: MenuItem[] = [
-    { id: "default-nav-shop", title: "Shop", url: "/collections/all", type: "HTTP", items: [] },
-  ];
+const FALLBACK_ITEMS: MenuItem[] = [
+  { id: "default-nav-shop", title: "Shop", url: "/collections/all", type: "HTTP", items: [] },
+];
+
+async function getNavItems(): Promise<MenuItem[]> {
+  try {
+    const menu = await getMenu({ handle: "main-menu" });
+    return menu && menu.items.length > 0 ? menu.items : FALLBACK_ITEMS;
+  } catch {
+    return FALLBACK_ITEMS;
+  }
+}
+
+export async function Nav() {
+  const items = await getNavItems();
   return (
     <nav
       className="sticky top-0 z-30 w-full bg-background pt-[env(safe-area-inset-top,0px)] transition-shadow duration-250"
