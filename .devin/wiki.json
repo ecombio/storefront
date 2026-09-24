@@ -1,0 +1,302 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "What the ecombio/storefront template is: a Next.js App Router Shopify Hydrogen storefront with an embedded Eve AI shopping agent. Summarizes the three-owner architecture (Shopify / Next.js / Eve) and links to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started & Configuration",
+      "purpose": "Local setup, environment variables (.env.example), package scripts, tsconfig/oxlint/oxfmt tooling, shopConfig feature toggles and next.config.ts composition (withShopConfig, withBotId, withEve).",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Architecture & Ownership Boundaries",
+      "purpose": "The AGENTS.md contract: which layer owns what, the domain module convention lib/<domain>/{index,server,client,action}.ts, cached get* vs uncached fetch*, and rules for components/ui vs domain components.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Routing, Layouts & Error Handling",
+      "purpose": "App Router structure (app/ routes, layout.tsx, not-found.tsx), route-segment error boundaries and the shared ErrorBoundaryContent, proxy.ts request handling and instrumentation.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Shopify Data Layer",
+      "purpose": "Overview of lib/shopify: storefront client, GraphQL fragments, operations, transforms and generated types. Links to child pages for each concern.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Storefront Client & GraphQL Workflow",
+      "purpose": "storefront.request(gql doc), locale/country injection, error assertion (assertStorefrontOk), logging, shopify id encode/decode and discovery helpers.",
+      "parent": "Shopify Data Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Fragments & Transforms",
+      "purpose": "How GraphQL fragments compose (product, variant, bundle, collection, menu, filters, blogs, cart, customer) and how transforms map raw Shopify results to app types.",
+      "parent": "Shopify Data Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Product & Variant Data Model",
+      "purpose": "PRODUCT_FRAGMENT family, bundle relationships, ShopifyProduct/Variant/ProductCard types and the app-facing lib/product types.",
+      "parent": "Shopify Data Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Filters & Facets Transforms",
+      "purpose": "Filter fragment/transform pipeline, StorefrontProductFilter vs ProductFilter, active filter badges, price ranges.",
+      "parent": "Shopify Data Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Server Operations",
+      "purpose": "The lib/shopify/operations/* fetch* functions for products, collections, blogs, pages, policies, menus, shop and sitemap.",
+      "parent": "Shopify Data Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Storefront Features",
+      "purpose": "Overview of the shopper-facing feature areas — product detail, collections/search, cart, and content pages — linking to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Product Detail Page",
+      "purpose": "app/products/[handle] route, ProductDetailSection orchestration, media/lightbox, option and color pickers, product form state, buy buttons, selling plans, bundles and gift cards.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Collections, Browse & Search",
+      "purpose": "Collection and search routes, cursor pagination, infinite product grids, sort/toolbar, and server actions for browse state.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Filter Sidebar UI",
+      "purpose": "CollectionFilterSidebarClient, filter primitives, swatch grids, price range inputs, pending state and sheet variant on mobile.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Product Cards & Price Display",
+      "purpose": "ProductCard composition, skeletons, Price/DiscountBadge formatting and buildProductUrl.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Cart & Checkout",
+      "purpose": "Server cart handlers, seedCartData, /api/cart writes via useCartForm, cart overlay/drawer, cart page body & summary, line forms, discounts, warnings and checkout handoff.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Content Pages: Blogs, Pages & Policies",
+      "purpose": "Blog/article, shop page and policy routes with their server modules, rich text rendering and prose styling.",
+      "parent": "Storefront Features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Customer Accounts & Authentication",
+      "purpose": "Overview of the Customer Account API integration, session cookies and the account area; links to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Auth & Session Management",
+      "purpose": "Encrypted HttpOnly cookies, isCustomerLoggedIn / requireCustomerSession / requireCustomerAccessToken, /account/refresh flow, customer-account client and OAuth paths in proxy.ts.",
+      "parent": "Customer Accounts & Authentication",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Account Operations & Pages",
+      "purpose": "Customer profile/orders/addresses queries and mutations, account layout and routes, sidebar/mobile tabs, address book, profile form, order display and sign-out.",
+      "parent": "Customer Accounts & Authentication",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Eve AI Shopping Agent",
+      "purpose": "Overview of the agent layer: agent/ definitions, Eve channels/connections, tools, and the in-page chat UI. Links to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Agent Runtime: Channels, Connections & Session",
+      "purpose": "agent.ts model/context window, channels (home, eve), Shopify catalog MCP + policies connections, UCP profile route, session endpoint and BotID protection.",
+      "parent": "Eve AI Shopping Agent",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Agent Tools",
+      "purpose": "Catalog tools (present-products, browse-collection, list-collections, get-recommendations, get-product-details), cart tools (get-cart, add-to-cart, update-cart-item, add-cart-note) and navigate; shared agent/lib helpers.",
+      "parent": "Eve AI Shopping Agent",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Agent UI & Cart Bridge",
+      "purpose": "Agent panel, chat message/composer/thinking components, ShoppingResults rendering of dynamic tool output, AgentVariantPicker and the AgentCartBridge status machine.",
+      "parent": "Eve AI Shopping Agent",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Presentation Layer",
+      "purpose": "Overview of shared UI primitives, navigation chrome and global styling; links to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "UI Primitives",
+      "purpose": "components/ui catalogue: button, input(-group), textarea, select, switch, swatch, dialog, sheet, accordion, slider, badge, skeleton, container/page/sections, auto-play video, image placeholder.",
+      "parent": "Presentation Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Navigation, Footer & Action Bar",
+      "purpose": "Nav shell, mobile menu, quick links, search modal, account nav, cart button, footer and social links, action bar.",
+      "parent": "Presentation Layer",
+      "page_notes": [
+        {
+          "content": "The header (components/nav/index.tsx) is an async Server Component that loads the Shopify menu with handle main-menu through getMenu in lib/menu/server.ts (cached remotely, tag menus). If the menu is empty or the fetch fails it falls back to a single Shop link to /collections/all. The same items feed MobileMenu (accordion drawer) and QuickLinks (desktop mega-menu: second-level items become columns, up to 5, and third-level items become the links under each column). Footer menu items are still hardcoded to an empty array in components/footer/index.tsx."
+        }
+      ]
+    },
+    {
+      "title": "SEO, Machine Readability & Analytics",
+      "purpose": "Overview of discoverability concerns: metadata/schema, Markdown/LLM representations, sitemaps and analytics. Links to children.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "SEO Metadata, Schema.org & Sitemaps",
+      "purpose": "lib/seo metadata builders, Schema.org components (product, collection, site, breadcrumb), Open Graph, sitemap shards and robots.ts.",
+      "parent": "SEO, Machine Readability & Analytics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Markdown & llms.txt Representations",
+      "purpose": "Content negotiation in lib/markdown, per-domain markdown renderers (product, collection, catalog, search, not-found) and the app/md + llms.txt routes.",
+      "parent": "SEO, Machine Readability & Analytics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
