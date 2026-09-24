@@ -1,3 +1,52 @@
+## Updating the GitHub repository
+
+Pushes to `main` deploy to production on Vercel automatically, so only push work you are happy to publish.
+
+Plain `git push` fails silently on this machine (exit code 128) because git has no working GitHub credential helper. Use the push command in step 4 instead.
+
+Run everything in PowerShell. Paste one block at a time, copy only the command and never the `PS C:\...>` prompt, and never paste a token anywhere.
+
+1. Go to the project folder and see what changed:
+
+```powershell
+cd C:\Users\Admin\Ecombio\Storefront
+git status
+```
+
+2. Stage only the files you mean to commit. Avoid `git add .`, and never stage `.env.local`:
+
+```powershell
+git add README.md
+```
+
+3. Commit with a short message:
+
+```powershell
+git commit -m "Describe the change"
+```
+
+4. Push using the GitHub CLI login:
+
+```powershell
+$t = gh auth token
+$h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
+git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
+```
+
+5. Confirm it landed. The two hashes should match:
+
+```powershell
+git ls-remote origin main
+git log --oneline -1
+```
+
+6. Check the build at https://vercel.com/ecombiology/storefront/deployments. If a build fails, the previous deployment stays live. Read the build log, fix the problem, and push again. If the cause was an environment variable, fix it in Vercel and use Redeploy from the deployment's menu.
+
+7. Close the PowerShell window so the token variable is cleared.
+
+If the push is rejected with a 401 or a permission error, run `gh auth status`. If it shows you logged out, run `gh auth login`, then try step 4 again. If the remote has newer commits, run `git pull --rebase origin main` and push again.
+
+---
 # Ecombio Storefront
 
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel.
