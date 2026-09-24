@@ -159,6 +159,40 @@ Checkout runs on `ecombio.myshopify.com`. A branded `checkout.ecombio.com` is pl
 
 Do the test order on the current checkout first. The customer-account callback and logout URIs stay on `https://ecombio.com/...` either way.
 
+## Languages and regions
+
+The storefront is single-language: US / EN / `en-US`, clean URLs such as `/products/...`, and copy written inside the component that shows it. There is no central translation file, so to change wording, search the repo for the text you see on the site. After changing a message that depends on a count, check zero, one, and many, plus loading, empty, and error states.
+
+Country and language configure Shopify requests. Locale only controls number and date formatting. Prices use the currency Shopify returns; changing the locale does not convert them. Product and content translations are done in Shopify, not in the code.
+
+Options if more languages or regions are needed (each is a skill a coding agent runs; read the skill page first):
+
+- `/vercel-shop:enable-i18n`: next-intl, per-language message catalogs, language-prefixed URLs, and a copy-language switcher. It moves routes under `app/[locale]`, does not translate anything, and does not change the commerce country. After running it, repeat the sign-in and cart tests and confirm the Shopify callback URI still matches.
+- `/vercel-shop:enable-shopify-markets`: regional commerce context and Shopify-controlled pricing.
+- Third-party translation such as Weglot: its Shopify app is built for Online Store themes. Headless and Next.js support is unverified; ask the vendor before relying on it. Shopify hosts checkout, so its language comes from Shopify.
+
+Do this on a branch, review the diff, run `pnpm lint` and `pnpm build`, and only then merge to `main`.
+
+## Working with a coding agent
+
+Optional; the template builds and deploys without it. To install the template plugins in a supported agent:
+
+```bash
+npx plugins add vercel/shop --scope project --yes
+npx plugins add vercel/vercel-plugin --scope project --yes
+npx plugins add Shopify/shopify-ai-toolkit --scope project --yes
+```
+
+Useful commands: `/vercel-shop:enable-shopify-menus`, `/vercel-shop:enable-i18n`, `/vercel-shop:enable-shopify-markets`, `/vercel-shop:enable-analytics`, `/vercel-shop:build-shop`, `/vercel-shop:update-shop`.
+
+Rules from the template's agent guide:
+
+- Prices, availability, cart totals, and customer identity always come from Shopify responses; do not reimplement them.
+- Cart changes go through the Hydrogen handlers, not Server Actions, and never invalidate public caches.
+- Customer session refresh happens only in the Hydrogen handlers registered in `proxy.ts`.
+- Every configurable `process.env` variable needs a row in `.env.example`.
+- This Next.js version has breaking changes; read `node_modules/next/dist/docs/` before changing framework code.
+- Review every agent change with `git diff` before committing.
 ## Launch status
 
 Done:
@@ -173,7 +207,7 @@ Done:
 
 Remaining:
 
-- [ ] Sign-in test: log in at `/account/login`, check profile, orders, addresses, and logout
+- [ ] Sign-in test: `/account/login` redirects to Shopify with `redirect_uri=https://ecombio.com/account/authorize` (verified). Still to confirm in a browser: sign in with the emailed code, check profile, orders, addresses, and logout
 - [ ] Cart test: add, change quantity, remove, discount code, cart carries over after sign-in
 - [ ] Checkout test: full test order on the live site, including Shop Pay
 - [ ] Branded checkout domain: finish `checkout.ecombio.com` (see Checkout domain)
@@ -192,4 +226,5 @@ Later / optional:
 - [ ] Shop Agent (card on file in Vercel AI Gateway, spending limits, bot protection)
 - [ ] Vercel Web Analytics
 - [ ] Shopify-managed navigation and footer menus
+- [ ] Multiple languages or regions (see Languages and regions)
 - [ ] "Pairs Well With" products and bundles in Shopify
