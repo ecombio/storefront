@@ -1,10 +1,11 @@
-'use client';
+"use client";
 // components/@yotpo/loader.tsx
 
-import Script from 'next/script';
-import { usePathname } from 'next/navigation';
-import { useEffect, useRef } from 'react';
-import { YOTPO_APP_KEY } from './config';
+import { usePathname } from "next/navigation";
+import Script from "next/script";
+import { useEffect, useRef } from "react";
+
+import { YOTPO_APP_KEY } from "./config";
 
 declare global {
   interface Window {

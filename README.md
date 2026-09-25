@@ -2,14 +2,14 @@
 
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
 
-| Item | Where |
-| --- | --- |
-| Live site | https://ecombio.com (`www` redirects to it) |
-| GitHub repo | https://github.com/ecombio/storefront (branch `main`) |
-| Vercel project | https://vercel.com/ecombiology/storefront |
-| Shopify store | `ecombio.myshopify.com` |
-| Checkout | Hosted by Shopify, currently on `ecombio.myshopify.com` |
-| Template docs | https://shop-docs.labs.vercel.dev |
+| Item             | Where                                                   |
+| ---------------- | ------------------------------------------------------- |
+| Live site        | https://ecombio.com (`www` redirects to it)             |
+| GitHub repo      | https://github.com/ecombio/storefront (branch `main`)   |
+| Vercel project   | https://vercel.com/ecombiology/storefront               |
+| Shopify store    | `ecombio.myshopify.com`                                 |
+| Checkout         | Hosted by Shopify, currently on `ecombio.myshopify.com` |
+| Template docs    | https://shop-docs.labs.vercel.dev                       |
 | Routes reference | https://shop-docs.labs.vercel.dev/docs/reference/routes |
 
 ## Updating the GitHub repository
@@ -87,12 +87,12 @@ Fill in `.env.local` with the variables listed below. Never commit it. Customer 
 
 Feature flags and site identity live in `lib/config/index.ts`. Keep config keys in alphabetical order.
 
-| Feature | State |
-| --- | --- |
-| Customer accounts (`auth`) | Enabled |
-| Search | Enabled |
-| Product page: bundles, Buy with Shop, complementary products, quantity picker, related products | Enabled |
-| Shop Agent (`agent`), analytics, bot protection, browser agents, Shopify redirects | Disabled |
+| Feature                                                                                         | State    |
+| ----------------------------------------------------------------------------------------------- | -------- |
+| Customer accounts (`auth`)                                                                      | Enabled  |
+| Search                                                                                          | Enabled  |
+| Product page: bundles, Buy with Shop, complementary products, quantity picker, related products | Enabled  |
+| Shop Agent (`agent`), analytics, bot protection, browser agents, Shopify redirects              | Disabled |
 
 Localization is US / EN / `en-US`. The site URL is `https://ecombio.com`; other environments fall back to `http://localhost:3000`.
 
@@ -128,16 +128,16 @@ If sign-in fails, compare the deployed origin, callback URI, logout URI, store d
 
 Values live in Vercel (Production and Preview) and `.env.local`, never in git. Mark secrets **Sensitive** in Vercel. Changes only apply to new deployments, so redeploy after editing. Every variable the code reads should have a row in `.env.example`.
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` | Required. Shopify store domain. |
-| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Required. Public Storefront API token. |
-| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID` | Cart attribution for the Headless storefront. |
-| `CUSTOMER_ACCOUNT_SESSION_SECRET` | Required while customer accounts are enabled. Session encryption secret you generate. |
-| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID` | Required while customer accounts are enabled. Confidential client ID. |
-| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET` | Required while customer accounts are enabled. Confidential client secret. |
-| `SHOPIFY_WEBHOOK_SECRET` | Enables `POST /api/webhooks/shopify` (returns 404 without it). |
-| `AI_GATEWAY_API_KEY` | Only needed if Shop Agent is enabled. |
+| Variable                                      | Purpose                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN`            | Required. Shopify store domain.                                                       |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Required. Public Storefront API token.                                                |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID`           | Cart attribution for the Headless storefront.                                         |
+| `CUSTOMER_ACCOUNT_SESSION_SECRET`             | Required while customer accounts are enabled. Session encryption secret you generate. |
+| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID`      | Required while customer accounts are enabled. Confidential client ID.                 |
+| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET`  | Required while customer accounts are enabled. Confidential client secret.             |
+| `SHOPIFY_WEBHOOK_SECRET`                      | Enables `POST /api/webhooks/shopify` (returns 404 without it).                        |
+| `AI_GATEWAY_API_KEY`                          | Only needed if Shop Agent is enabled.                                                 |
 
 ## How the storefront works
 
@@ -194,6 +194,7 @@ Rules from the template's agent guide:
 - Every configurable `process.env` variable needs a row in `.env.example`.
 - This Next.js version has breaking changes; read `node_modules/next/dist/docs/` before changing framework code.
 - Review every agent change with `git diff` before committing.
+
 ## Launch status
 
 Done:

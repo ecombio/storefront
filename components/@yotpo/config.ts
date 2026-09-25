@@ -2,10 +2,10 @@
 
 export const YOTPO_APP_KEY = process.env.NEXT_PUBLIC_YOTPO_APP_KEY;
 
-if (!YOTPO_APP_KEY && process.env.NODE_ENV !== 'production') {
+if (!YOTPO_APP_KEY && process.env.NODE_ENV !== "production") {
   // eslint-disable-next-line no-console
   console.warn(
-    '[yotpo] NEXT_PUBLIC_YOTPO_APP_KEY is not set — star ratings and reviews widgets will not render.',
+    "[yotpo] NEXT_PUBLIC_YOTPO_APP_KEY is not set — star ratings and reviews widgets will not render.",
   );
 }
 

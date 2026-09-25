@@ -1,6 +1,6 @@
 // components/@yotpo/reviews-widget.tsx
 
-import type { YotpoProduct } from './config';
+import type { YotpoProduct } from "./config";
 
 /**
  * Full reviews list + "write a review" CTA (Yotpo's "main widget").

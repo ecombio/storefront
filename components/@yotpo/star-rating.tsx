@@ -1,6 +1,6 @@
 // components/@yotpo/star-rating.tsx
 
-import type { YotpoProduct } from './config';
+import type { YotpoProduct } from "./config";
 
 /**
  * Star rating summary badge (Yotpo's "bottomLine" snippet).
