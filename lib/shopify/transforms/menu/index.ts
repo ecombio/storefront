@@ -1,3 +1,4 @@
+// lib/shopify/transforms/menu/index.ts
 import type {
   Menu,
   MenuItem,
@@ -37,6 +38,25 @@ function transformShopifyMenuItemUrl(
 ): string {
   if (type === "FRONTPAGE") return "/";
   if (type === "SEARCH") return "/search";
+
+  if (type === "CUSTOMER_ACCOUNT_PAGE") {
+    // Shopify returns a signed, per-request URL here (buyer_flags), which
+    // changes on every call — unsafe to bake into a long-lived cached menu
+    // (this menu is fetched under "use cache: remote" with cacheLife("max")).
+    // Map to our own static account routes instead of Shopify's hosted UI.
+    if (!url) return "/account";
+
+    let path: string;
+    try {
+      path = new URL(url).pathname;
+    } catch {
+      return "/account";
+    }
+
+    if (path.endsWith("/orders")) return "/account/orders";
+    if (path.endsWith("/addresses")) return "/account/addresses";
+    return "/account/profile"; // covers /profile and /settings
+  }
 
   if (!url) return "/";
 
