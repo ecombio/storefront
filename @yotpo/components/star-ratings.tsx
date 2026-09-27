@@ -1,3 +1,7 @@
+// Path: @yotpo/components/star-ratings.tsx
+// (Renamed from star-rating.tsx — component export name (`StarRating`) is unchanged,
+// so no other file needs to update its import name, only its import path via @yotpo/index.ts.)
+
 import { getProductRatingSummary } from '../client';
 import { StarRow } from './star';
 
@@ -8,7 +12,16 @@ import { StarRow } from './star';
 export async function StarRating({ productId }: { productId: string }) {
   const { averageScore, totalReviews } = await getProductRatingSummary(productId);
 
-  if (totalReviews === 0) return null;
+  if (totalReviews === 0) {
+    return (
+      <div className="flex items-center gap-2 font-sans">
+        <div className="opacity-30">
+          <StarRow score={0} />
+        </div>
+        <span className="text-sm font-bold text-black">Write a Review</span>
+      </div>
+    );
+  }
 
   return (
     <div

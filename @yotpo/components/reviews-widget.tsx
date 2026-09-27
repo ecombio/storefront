@@ -1,3 +1,7 @@
+// Path: @yotpo/components/reviews-widget.tsx
+// (Renamed from product-reviews.tsx — component export name (`ProductReviews`) is unchanged,
+// so no other file needs to update its import name, only its import path via @yotpo/index.ts.)
+
 import { getProductReviews } from '../client';
 import type { YotpoReview } from '../types';
 import { StarRow } from './star';
@@ -72,10 +76,20 @@ export async function ProductReviews({ productId }: { productId: string }) {
 
   if (bottomline.total_review === 0) {
     return (
-      <section className="mx-auto w-full max-w-[1100px] px-6 py-8 text-center">
-        <p className="font-sans text-sm text-neutral-500">
-          No reviews yet — be the first to write one.
+      <section className="mx-auto w-full max-w-[1100px] px-6 py-12 text-center font-sans">
+        <h2 className="mb-4 text-lg font-bold text-black">Customer Reviews</h2>
+        <div className="mb-4 flex justify-center opacity-30">
+          <StarRow score={0} />
+        </div>
+        <p className="mb-5 text-sm text-neutral-500">
+          No reviews yet — be the first to share your thoughts.
         </p>
+        <button
+          type="button"
+          className="whitespace-nowrap rounded-full bg-black px-6 py-3 text-xs font-bold text-white hover:opacity-85"
+        >
+          Write A Review
+        </button>
       </section>
     );
   }
