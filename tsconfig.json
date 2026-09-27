@@ -1,3 +1,4 @@
+// C:\Users\Admin\Ecombio\storefront\tsconfig.json
 {
   "compilerOptions": {
     "allowArbitraryExtensions": true,
@@ -11,7 +12,9 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@yotpo": ["./@yotpo/index.ts"],
+      "@yotpo/*": ["./@yotpo/*"]
     },
     "plugins": [
       {

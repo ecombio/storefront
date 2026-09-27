@@ -1,3 +1,15 @@
+// Path: components/product-detail/product-detail-section.tsx
+//
+// CHANGES FROM ORIGINAL:
+// 1. Imports `getNumericShopifyId` and `ProductReviews` / `StarRating` from the Yotpo module.
+// 2. Computes `numericProductId` once in `ProductDetailSection` (GID -> raw numeric Shopify ID,
+//    which is what Yotpo's REST widget API expects — passing the raw GID silently returned 0 reviews).
+// 3. Renders `<ProductReviews />` full-width, below the two-column grid.
+// 4. Threads `numericProductId` down to `ProductInfoArea` and renders a `<StarRating />` badge
+//    under the product title.
+//
+// Uses the `@yotpo` path alias (mapped to `./@yotpo/index.ts` in tsconfig.json).
+
 import { cn } from "cn";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { type ReactNode, Suspense } from "react";
@@ -39,6 +51,8 @@ import {
 } from "@/lib/product";
 import { type SelectedOptions } from "@/lib/product/types";
 import type { ProductDetails, ProductVariant } from "@/lib/product/types";
+import { getNumericShopifyId } from "@/lib/shopify/id/server";
+import { ProductReviews, StarRating } from "@yotpo";
 
 export function ProductDetailSection({
   product,
@@ -49,6 +63,10 @@ export function ProductDetailSection({
   selectedOptionsPromise: Promise<SelectedOptions>;
   variantPromise: Promise<ProductVariant | undefined>;
 }) {
+  // Yotpo's REST widget API expects the raw numeric Shopify product ID, not the GraphQL GID
+  // (`gid://shopify/Product/123...`) that `product.id` holds elsewhere in this codebase.
+  const numericProductId = getNumericShopifyId(product.id);
+
   return (
     <>
       <ProductSchema
@@ -77,8 +95,17 @@ export function ProductDetailSection({
       />
       <div className="grid gap-10 lg:grid-cols-10 lg:items-start lg:gap-5">
         <ProductMediaArea product={product} selectedOptionsPromise={selectedOptionsPromise} />
-        <ProductInfoArea product={product} variantPromise={variantPromise} />
+        <ProductInfoArea
+          product={product}
+          variantPromise={variantPromise}
+          numericProductId={numericProductId}
+        />
       </div>
+      {numericProductId ? (
+        <Suspense fallback={null}>
+          <ProductReviews productId={numericProductId} />
+        </Suspense>
+      ) : null}
     </>
   );
 }
@@ -159,9 +186,11 @@ async function ResolvedColorImageCarousel({
 function ProductInfoArea({
   product,
   variantPromise,
+  numericProductId,
 }: {
   product: ProductDetails;
   variantPromise: Promise<ProductVariant | undefined>;
+  numericProductId: string | null;
 }) {
   const { options, handle, descriptionHtml } = product;
   const uniformStock = product.allVariantsInStock;
@@ -177,6 +206,11 @@ function ProductInfoArea({
       >
         <div data-slot="product-info-header">
           <h1 className="text-foreground text-3xl">{product.title}</h1>
+          {numericProductId ? (
+            <div className="mt-2">
+              <StarRating productId={numericProductId} />
+            </div>
+          ) : null}
           {product.hasUniformPricing ? (
             <ProductPrice
               amount={product.priceRange.minVariantPrice.amount}
