@@ -1,12 +1,11 @@
 // Path: components/product-detail/product-detail-section.tsx
 //
-// CHANGES FROM ORIGINAL:
-// 1. Imports `getNumericShopifyId` and `ProductReviews` / `StarRating` from the Yotpo module.
-// 2. Computes `numericProductId` once in `ProductDetailSection` (GID -> raw numeric Shopify ID,
-//    which is what Yotpo's REST widget API expects — passing the raw GID silently returned 0 reviews).
-// 3. Renders `<ProductReviews />` full-width, below the two-column grid.
-// 4. Threads `numericProductId` down to `ProductInfoArea` and renders a `<StarRating />` badge
-//    under the product title.
+// Yotpo integration notes:
+// 1. Computes `numericProductId` once in `ProductDetailSection` (GID -> raw numeric Shopify ID,
+//    which is what Yotpo's REST widget API expects; passing the raw GID silently returned 0 reviews).
+// 2. Renders `<ProductReviews />` full-width below the two-column grid, inside a `#reviews` wrapper
+//    so the star badge can jump to it (the wrapper always exists, even while reviews stream in).
+// 3. `<StarRating />` sits under the product title, wrapped in <Suspense> (required with cacheComponents).
 //
 // Uses the `@yotpo` path alias (mapped to `./@yotpo/index.ts` in tsconfig.json).
 
@@ -102,9 +101,15 @@ export function ProductDetailSection({
         />
       </div>
       {numericProductId ? (
-        <Suspense fallback={null}>
-          <ProductReviews productId={numericProductId} />
-        </Suspense>
+        <div id="reviews" className="scroll-mt-24">
+          <Suspense fallback={<div className="min-h-64" aria-hidden />}>
+            <ProductReviews
+              productId={numericProductId}
+              handle={product.handle}
+              productTitle={product.title}
+            />
+          </Suspense>
+        </div>
       ) : null}
     </>
   );
@@ -207,8 +212,10 @@ function ProductInfoArea({
         <div data-slot="product-info-header">
           <h1 className="text-foreground text-3xl">{product.title}</h1>
           {numericProductId ? (
-            <div className="mt-2">
-              <StarRating productId={numericProductId} />
+            <div className="mt-2 min-h-5">
+              <Suspense fallback={<div className="h-5" aria-hidden />}>
+                <StarRating productId={numericProductId} />
+              </Suspense>
             </div>
           ) : null}
           {product.hasUniformPricing ? (

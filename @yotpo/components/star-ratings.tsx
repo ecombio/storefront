@@ -1,40 +1,54 @@
 // Path: @yotpo/components/star-ratings.tsx
-// (Renamed from star-rating.tsx — component export name (`StarRating`) is unchanged,
-// so no other file needs to update its import name, only its import path via @yotpo/index.ts.)
+//
+// CHANGES:
+// - Renders nothing if Yotpo is unavailable (was: "Write a Review" on every failure).
+// - Whole badge is a link that jumps to the reviews section (`href`, default "#reviews").
+// - aria-label uses a rounded score; "1 Review" pluralization kept.
+//
+// Async Server Component; wrap it in <Suspense> where it's used.
 
 import { getProductRatingSummary } from '../client';
 import { StarRow } from './star';
 
-/**
- * Compact rating badge for product cards / PLPs.
- * Async Server Component — fetches on the server, ships no client JS.
- */
-export async function StarRating({ productId }: { productId: string }) {
-  const { averageScore, totalReviews } = await getProductRatingSummary(productId);
+export async function StarRating({
+  productId,
+  href = '#reviews'
+}: {
+  productId: string;
+  href?: string;
+}) {
+  const summary = await getProductRatingSummary(productId);
+  if (!summary) return null;
+
+  const { averageScore, totalReviews } = summary;
 
   if (totalReviews === 0) {
     return (
-      <div className="flex items-center gap-2 font-sans">
+      <a href={href} className="inline-flex items-center gap-2 font-sans hover:opacity-80">
         <div className="opacity-30">
-          <StarRow score={0} />
+          <StarRow score={0} label="No reviews yet" />
         </div>
-        <span className="text-sm font-bold text-black">Write a Review</span>
-      </div>
+        <span className="text-sm font-bold text-black">Write a review</span>
+      </a>
     );
   }
 
+  const label = `${Number(averageScore.toFixed(1))} out of 5 stars, ${totalReviews} ${
+    totalReviews === 1 ? 'review' : 'reviews'
+  }. Jump to reviews`;
+
   return (
-    <div
-      className="flex items-center gap-2 font-sans"
-      role="img"
-      aria-label={`${averageScore} out of 5 stars, ${totalReviews} reviews`}
+    <a
+      href={href}
+      aria-label={label}
+      className="inline-flex items-center gap-2 font-sans hover:opacity-80"
     >
       <span className="text-sm font-bold text-black">{averageScore.toFixed(1)}</span>
-      <StarRow score={averageScore} />
+      <StarRow score={averageScore} label="" />
       <span className="h-3 w-px bg-neutral-300" />
-      <span className="text-sm font-bold text-black">
+      <span className="text-sm font-bold text-black underline-offset-2 hover:underline">
         {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
       </span>
-    </div>
+    </a>
   );
 }

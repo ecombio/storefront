@@ -1,9 +1,19 @@
 // Path: @yotpo/components/reviews-widget.tsx
-// (Renamed from product-reviews.tsx — component export name (`ProductReviews`) is unchanged,
-// so no other file needs to update its import name, only its import path via @yotpo/index.ts.)
+//
+// CHANGES:
+// - Renders nothing if Yotpo is unavailable (was: "No reviews yet" during any outage).
+// - "Write A Review" now opens a working modal (WriteReviewButton) in both the empty and populated states.
+// - New props `handle` + `productTitle` (the form needs them; the server route re-derives the
+//   product ID from the handle, so the client can't post reviews to arbitrary products).
+// - Vote buttons were dead (no handlers in a Server Component); they're now a plain "helpful" count.
+// - Guards: empty title / display name, "1 review" pluralization, unambiguous date format.
+// - The #reviews anchor lives on a wrapper in product-detail-section.tsx so it always exists.
+//
+// Async Server Component. Pagination / sorting is still page 1 only.
 
 import { getProductReviews } from '../client';
 import type { YotpoReview } from '../types';
+import { WriteReviewButton } from './review-form';
 import { StarRow } from './star';
 
 function DistributionBar({
@@ -28,68 +38,65 @@ function DistributionBar({
 }
 
 function ReviewCard({ review }: { review: YotpoReview }) {
-  const date = new Date(review.created_at).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit'
+  const date = new Date(review.created_at).toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
   });
+  const name = review.user?.display_name?.trim() || 'Anonymous';
 
   return (
     <div className="flex gap-4 border-t border-neutral-100 py-5">
-      <div className="h-9 w-9 flex-shrink-0 rounded-full bg-[#CBD2E0]" />
+      <div className="h-9 w-9 flex-shrink-0 rounded-full bg-[#CBD2E0]" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-bold text-black">{review.user.display_name}</p>
+            <p className="text-sm font-bold text-black">{name}</p>
             <div className="my-1.5">
               <StarRow score={review.score} />
             </div>
-            <p className="mb-1 text-sm font-bold text-black">{review.title}</p>
+            {review.title ? (
+              <p className="mb-1 text-sm font-bold text-black">{review.title}</p>
+            ) : null}
             <p className="text-sm leading-relaxed text-black">{review.content}</p>
           </div>
           <span className="whitespace-nowrap text-xs text-neutral-500">{date}</span>
         </div>
-        <div className="mt-3 flex items-center gap-3 text-xs text-neutral-500">
-          <span>Was this review helpful?</span>
-          <button type="button" className="hover:text-black">
-            👍 {review.votes_up}
-          </button>
-          <button type="button" className="hover:text-black">
-            👎 {review.votes_down}
-          </button>
-        </div>
+        {review.votes_up > 0 ? (
+          <p className="mt-3 text-xs text-neutral-500">
+            {review.votes_up} {review.votes_up === 1 ? 'person' : 'people'} found this helpful
+          </p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-/**
- * Full "Customer Reviews" section for a product page.
- * Async Server Component — fetches page 1 on the server.
- *
- * Sorting/filtering/pagination beyond page 1 needs a small client component
- * calling a Route Handler that wraps getProductReviews() — not included
- * here since it's a separate, opt-in concern.
- */
-export async function ProductReviews({ productId }: { productId: string }) {
-  const { reviews, bottomline } = await getProductReviews(productId);
+export async function ProductReviews({
+  productId,
+  handle,
+  productTitle
+}: {
+  productId: string;
+  handle: string;
+  productTitle: string;
+}) {
+  const data = await getProductReviews(productId);
+  if (!data) return null;
+
+  const { reviews, bottomline } = data;
 
   if (bottomline.total_review === 0) {
     return (
       <section className="mx-auto w-full max-w-[1100px] px-6 py-12 text-center font-sans">
         <h2 className="mb-4 text-lg font-bold text-black">Customer Reviews</h2>
         <div className="mb-4 flex justify-center opacity-30">
-          <StarRow score={0} />
+          <StarRow score={0} label="No reviews yet" />
         </div>
         <p className="mb-5 text-sm text-neutral-500">
-          No reviews yet — be the first to share your thoughts.
+          No reviews yet. Be the first to share your thoughts.
         </p>
-        <button
-          type="button"
-          className="whitespace-nowrap rounded-full bg-black px-6 py-3 text-xs font-bold text-white hover:opacity-85"
-        >
-          Write A Review
-        </button>
+        <WriteReviewButton handle={handle} productTitle={productTitle} />
       </section>
     );
   }
@@ -107,7 +114,8 @@ export async function ProductReviews({ productId }: { productId: string }) {
             <StarRow score={bottomline.average_score} />
           </div>
           <div className="text-xs text-neutral-500">
-            Based on {bottomline.total_review} reviews
+            Based on {bottomline.total_review}{' '}
+            {bottomline.total_review === 1 ? 'review' : 'reviews'}
           </div>
         </div>
 
@@ -122,12 +130,7 @@ export async function ProductReviews({ productId }: { productId: string }) {
           ))}
         </div>
 
-        <button
-          type="button"
-          className="whitespace-nowrap rounded-full bg-black px-6 py-3 text-xs font-bold text-white hover:opacity-85"
-        >
-          Write A Review
-        </button>
+        <WriteReviewButton handle={handle} productTitle={productTitle} />
       </div>
 
       <div>

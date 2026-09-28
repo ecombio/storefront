@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 
 import type { CommerceLocale } from "@/lib/config/types";
 import type {
@@ -51,6 +52,8 @@ export async function getProductVariant(params: {
   selectedOptions: SelectedOption[];
 }): Promise<ProductVariant | undefined> {
   // Uncached: the selected variant's price and stock are read live per request, and caching per option combination multiplies entries by variant count.
+  // connection() defers this to request time, where per-request values (Hydrogen's generated request ID uses crypto.randomUUID) are allowed during prerender.
+  await connection();
   return fetchProductVariant(params);
 }
 

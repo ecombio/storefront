@@ -1,4 +1,5 @@
 import { PredictiveSearchProvider } from "@shopify/hydrogen/react";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -36,8 +37,21 @@ export async function Nav() {
       <Container className="flex h-16 items-center gap-2.5 md:gap-5">
         <MobileMenu items={items} />
 
-        <Link className="flex items-center shrink-0" href="/">
-          <span className="text-xl leading-4">{shopConfig.site.name}</span>
+        <Link
+          aria-label={`${shopConfig.site.name} home`}
+          className="flex items-center shrink-0"
+          href="/"
+        >
+          {/* Put your logo in /public/logo.svg (or change the path). Set width/height to its real
+              proportions; h-8 keeps it 32px tall and w-auto keeps the aspect ratio. */}
+          <Image
+            alt={shopConfig.site.name}
+            className="h-8 w-auto"
+            height={32}
+            priority
+            src="/logo.svg"
+            width={140}
+          />
         </Link>
 
         <QuickLinks items={items} />

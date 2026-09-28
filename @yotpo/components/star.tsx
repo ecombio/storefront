@@ -1,10 +1,10 @@
 import { yotpoConfig } from '../config';
 
-export function Star({ filled }: { filled: boolean }) {
+export function Star({ filled, className = 'h-4 w-4' }: { filled: boolean; className?: string }) {
   return (
     <svg
       viewBox="0 0 18 18"
-      className="h-4 w-4"
+      className={className}
       style={{ fill: filled ? yotpoConfig.brand.starsColor : '#E5E5E5' }}
       aria-hidden="true"
     >
@@ -13,10 +13,14 @@ export function Star({ filled }: { filled: boolean }) {
   );
 }
 
-export function StarRow({ score }: { score: number }) {
+export function StarRow({ score, label }: { score: number; label?: string }) {
   const rounded = Math.round(score);
   return (
-    <div className="flex gap-0.5">
+    <div
+      className="flex gap-0.5"
+      role="img"
+      aria-label={label ?? `${Number(score.toFixed(1))} out of 5 stars`}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <Star key={i} filled={i < rounded} />
       ))}
