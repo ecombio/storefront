@@ -1,30 +1,52 @@
 # Ecombio Storefront
 
+Next time, pull **before** you commit and push, so the push doesn't get rejected. Run these one block at a time in PowerShell.
+
+**1. Sync first**
+```powershell
 cd C:\Users\Admin\Ecombio\Storefront
+git pull --rebase --autostash origin main
+```
+`--autostash` temporarily sets aside uncommitted changes, pulls, then restores them, so you can do this even before committing.
 
+**2. Optional checks**
+```powershell
+pnpm lint
+pnpm build
+```
+
+**3. Stage, excluding `.env.local` and `.devin/`**
+```powershell
+git add -A
+git reset .env.local .devin
 git status
+```
+This is simpler than your `ls-files` loops. Read the `git status` output to confirm only the files you expect are staged.
 
-# OPTIONAL: uncomment if you changed code
-# pnpm lint
-# pnpm build
+**4. Commit**
+```powershell
+git commit -m "Describe what changed"
+```
 
-# Stage modified tracked files
-git ls-files -m | ForEach-Object { git add $_ }
-
-# Stage untracked files EXCEPT .env.local and .devin/
-git ls-files --others --exclude-standard `
-    | Where-Object { $_ -notlike ".env.local" -and $_ -notlike ".devin/*" } `
-    | ForEach-Object { git add $_ }
-
-git commit -m "Update"
-
+**5. Push** (run each line separately, not pasted together)
+```powershell
 $t = gh auth token
 $h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
 git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
+```
 
+**6. Verify**
+```powershell
 git ls-remote origin main
 git log --oneline -1
+```
+The two hashes should match.
 
+**Tips:**
+- If the push is rejected again, run step 1 and push again.
+- The odd token dance is probably only needed if plain `git push origin main` fails. Since `gh auth login` sets up credentials, try `git push origin main` first.
+- Don't force push (`--force`) to fix a rejection unless you're sure what you're overwriting.
+- Commands like `gitstatus` need a space (`git status`). It worked in your paste, but type it with the space.
 
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
 
