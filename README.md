@@ -1,5 +1,31 @@
 # Ecombio Storefront
 
+cd C:\Users\Admin\Ecombio\Storefront
+
+git status
+
+# OPTIONAL: uncomment if you changed code
+# pnpm lint
+# pnpm build
+
+# Stage modified tracked files
+git ls-files -m | ForEach-Object { git add $_ }
+
+# Stage untracked files EXCEPT .env.local and .devin/
+git ls-files --others --exclude-standard `
+    | Where-Object { $_ -notlike ".env.local" -and $_ -notlike ".devin/*" } `
+    | ForEach-Object { git add $_ }
+
+git commit -m "Update"
+
+$t = gh auth token
+$h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
+git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
+
+git ls-remote origin main
+git log --oneline -1
+
+
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
 
 | Item             | Where                                                   |
