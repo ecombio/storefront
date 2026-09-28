@@ -1,20 +1,20 @@
 // Path: @yotpo/client.ts
 //
-// CHANGES:
-// 1. Uses `'use cache'` (your project has cacheComponents on) instead of fetch `next: {}` options,
-//    so reviews can live in the prerendered shell and revalidate via tags.
-// 2. Failures are honest: the cached function THROWS (errors are never cached), the public
-//    functions catch and return `null`. Components render nothing on null instead of
-//    claiming "No reviews yet" during a Yotpo outage.
-// 3. The response is normalized (missing bottomline / distribution buckets can't crash a render).
-// 4. `getProductRatingSummary` reuses the same cache entry as `getProductReviews` (same args),
-//    so the rating badge and the reviews section cost ONE upstream call per product.
+// - Uses `'use cache'` so reviews can live in the prerendered shell and revalidate via tags.
+// - Failures are honest: the cached function THROWS (errors are never cached), the public
+//   functions catch and return `null`. Components render nothing on null.
+// - The response is normalized so missing bottomline / distribution buckets can't crash a render.
+// - `getProductRatingSummary` shares the cache entry with `getProductReviews` (same args).
+// - All upstream calls time out after REQUEST_TIMEOUT_MS so a slow Yotpo can't stall a render
+//   or a review submission.
 
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 
 import { yotpoConfig } from './config';
 import type { YotpoProductReviews, YotpoRatingSummary } from './types';
+
+const REQUEST_TIMEOUT_MS = 5000;
 
 async function fetchProductReviews(
   appKey: string,
@@ -30,7 +30,10 @@ async function fetchProductReviews(
     `${yotpoConfig.apiBaseUrl}/${encodeURIComponent(appKey)}` +
     `/products/${encodeURIComponent(productId)}/reviews.json?page=${page}&per_page=${perPage}`;
 
-  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  const res = await fetch(url, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  });
   if (!res.ok) throw new Error(`Yotpo API ${res.status} ${res.statusText}`);
 
   const json = (await res.json()) as { response?: Partial<YotpoProductReviews> };
@@ -65,7 +68,7 @@ export async function getProductReviews(
   const appKey = yotpoConfig.appKey;
   if (!appKey) return null;
 
-  const { page = 1, perPage = yotpoConfig.reviewsPerPage } = opts;
+  const { page = 1, perPage = yotpoConfig.reviewsFetchLimit } = opts;
   try {
     return await fetchProductReviews(appKey, productId, page, perPage);
   } catch (err) {
@@ -112,10 +115,16 @@ export async function submitReview(input: SubmitReviewInput): Promise<boolean> {
   const appKey = yotpoConfig.appKey;
   if (!appKey) return false;
 
+  if (!yotpoConfig.shopDomain) {
+    console.error('Yotpo create review skipped: NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN is not set');
+    return false;
+  }
+
   try {
     const res = await fetch(yotpoConfig.createReviewUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       body: JSON.stringify({
         appkey: appKey,
         domain: yotpoConfig.shopDomain,

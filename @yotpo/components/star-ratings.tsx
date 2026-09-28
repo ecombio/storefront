@@ -1,13 +1,15 @@
 // Path: @yotpo/components/star-ratings.tsx
 //
-// CHANGES:
-// - Renders nothing if Yotpo is unavailable (was: "Write a Review" on every failure).
+// - Renders nothing if Yotpo is unavailable.
 // - Whole badge is a link that jumps to the reviews section (`href`, default "#reviews").
+// - Layout: stars, score (in the star color), divider, "N Reviews".
+// - Empty state is just a "Write a review" link (no zero-star row).
 // - aria-label uses a rounded score; "1 Review" pluralization kept.
 //
 // Async Server Component; wrap it in <Suspense> where it's used.
 
 import { getProductRatingSummary } from '../client';
+import { yotpoConfig } from '../config';
 import { StarRow } from './star';
 
 export async function StarRating({
@@ -24,11 +26,11 @@ export async function StarRating({
 
   if (totalReviews === 0) {
     return (
-      <a href={href} className="inline-flex items-center gap-2 font-sans hover:opacity-80">
-        <div className="opacity-30">
-          <StarRow score={0} label="No reviews yet" />
-        </div>
-        <span className="text-sm font-bold text-black">Write a review</span>
+      <a
+        href={href}
+        className="inline-flex items-center font-sans text-sm font-bold text-black underline-offset-2 hover:underline"
+      >
+        Write a review
       </a>
     );
   }
@@ -41,12 +43,14 @@ export async function StarRating({
     <a
       href={href}
       aria-label={label}
-      className="inline-flex items-center gap-2 font-sans hover:opacity-80"
+      className="inline-flex items-center gap-2.5 font-sans hover:opacity-80"
     >
-      <span className="text-sm font-bold text-black">{averageScore.toFixed(1)}</span>
-      <StarRow score={averageScore} label="" />
-      <span className="h-3 w-px bg-neutral-300" />
-      <span className="text-sm font-bold text-black underline-offset-2 hover:underline">
+      <StarRow score={averageScore} label="" starClassName="h-5 w-5" />
+      <span className="text-base font-bold" style={{ color: yotpoConfig.brand.starsColor }}>
+        {averageScore.toFixed(1)}
+      </span>
+      <span className="h-4 w-px bg-neutral-400" />
+      <span className="text-base font-bold text-black underline-offset-2 hover:underline">
         {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
       </span>
     </a>

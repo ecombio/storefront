@@ -47,7 +47,9 @@ export function WriteReviewButton({
       return;
     }
 
-    const form = new FormData(e.currentTarget);
+    // React nulls `e.currentTarget` after the first await, so grab the form element now.
+    const formEl = e.currentTarget;
+    const form = new FormData(formEl);
     setStatus('submitting');
     setError(null);
 
@@ -73,7 +75,7 @@ export function WriteReviewButton({
       }
       setStatus('success');
       setScore(0);
-      e.currentTarget.reset();
+      formEl.reset();
     } catch {
       setStatus('error');
       setError('Network error. Check your connection and try again.');
@@ -142,7 +144,7 @@ export function WriteReviewButton({
               </button>
             </div>
           ) : (
-            <form onSubmit={onSubmit} className="grid gap-4" noValidate>
+            <form onSubmit={onSubmit} className="grid gap-4">
               <fieldset>
                 <legend className="mb-1.5 text-sm font-bold">Your rating</legend>
                 <div className="flex gap-1" onMouseLeave={() => setHoverScore(0)}>

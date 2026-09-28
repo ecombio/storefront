@@ -13,7 +13,16 @@ export function Star({ filled, className = 'h-4 w-4' }: { filled: boolean; class
   );
 }
 
-export function StarRow({ score, label }: { score: number; label?: string }) {
+export function StarRow({
+  score,
+  label,
+  starClassName
+}: {
+  score: number;
+  label?: string;
+  /** Size classes for each star, e.g. "h-5 w-5". Defaults to h-4 w-4. */
+  starClassName?: string;
+}) {
   const rounded = Math.round(score);
   return (
     <div
@@ -22,7 +31,7 @@ export function StarRow({ score, label }: { score: number; label?: string }) {
       aria-label={label ?? `${Number(score.toFixed(1))} out of 5 stars`}
     >
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} filled={i < rounded} />
+        <Star key={i} filled={i < rounded} className={starClassName} />
       ))}
     </div>
   );

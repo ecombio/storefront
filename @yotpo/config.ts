@@ -1,9 +1,10 @@
 // Path: @yotpo/config.ts
 //
-// CHANGES:
 // - No longer throws at import time. A missing env var used to fail the build of every page
 //   that imports `@yotpo`; now the client simply returns null and the components render nothing.
-// - Adds `shopDomain`, used by the review-submission route.
+// - `shopDomain` is used by the review-submission route.
+// - `reviewsFetchLimit` reviews are fetched per product so the search / rating filter / sort
+//   controls have something to work with; `reviewsPerPage` is how many show before "Show more".
 //
 // The app key is a public Yotpo identifier, not a secret.
 
@@ -13,7 +14,8 @@ export const yotpoConfig = {
   shopDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? '',
   apiBaseUrl: 'https://api.yotpo.com/v1/widget',
   createReviewUrl: 'https://api.yotpo.com/v1/widget/reviews',
-  reviewsPerPage: 5, // matches "Reviews per page" in Yotpo's Style settings
+  reviewsFetchLimit: 50, // reviews requested from Yotpo per product (filters work on these)
+  reviewsPerPage: 5, // reviews shown before "Show more reviews"
   revalidateSeconds: 3600,
   brand: {
     primaryColor: '#000000',
