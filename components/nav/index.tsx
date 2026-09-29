@@ -14,6 +14,7 @@ import { CartIcon, CartIconFallback } from "./cart";
 import { MobileMenu } from "./mobile-menu";
 import { NavScrollBehavior } from "./nav-scroll-behavior";
 import { QuickLinks } from "./quick-links";
+import { ScrollFade } from "./scroll-fade";
 import { SearchModal } from "./search-modal";
 
 const FALLBACK_ITEMS: MenuItem[] = [
@@ -62,7 +63,7 @@ export async function Nav() {
             <Link
               key={link.url}
               href={link.url}
-              className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+              className="flex items-center gap-1.5 whitespace-nowrap hover:opacity-70 transition-opacity"
             >
               {link.icon && <link.icon className="size-3.5" aria-hidden="true" />}
               {link.label}
@@ -104,7 +105,7 @@ export async function Nav() {
         )}
 
         <div className="flex items-center gap-5 ml-auto">
-          <Link href="/pages/contact" className="hidden lg:inline text-sm font-medium hover:opacity-70">
+          <Link href="/pages/contact" className="hidden whitespace-nowrap lg:inline text-sm font-medium hover:opacity-70">
             Need help?
           </Link>
           {shopConfig.auth.isEnabled && (
@@ -118,10 +119,29 @@ export async function Nav() {
         </div>
       </Container>
 
-      {/* Tier 3: category links (desktop only) */}
-      <Container className="hidden md:flex items-center justify-between">
-        <QuickLinks items={items} />
-        <ul className="flex items-center gap-5 text-sm font-medium">
+      {/* Mobile: swipeable category chips with edge fades */}
+      <div className="pb-2 md:hidden">
+        <Container>
+          <ScrollFade innerClassName="gap-2">
+            {items.map((item) => (
+              <Link
+                key={item.id}
+                href={item.url}
+                className="shrink-0 whitespace-nowrap rounded-full border border-border px-3.5 py-1.5 text-sm font-medium"
+              >
+                {item.title}
+              </Link>
+            ))}
+          </ScrollFade>
+        </Container>
+      </div>
+
+      {/* Tier 3: category links scroll inside their own region; extra links stay fixed on the right */}
+      <Container className="hidden md:flex items-center gap-6">
+        <ScrollFade className="min-w-0 flex-1">
+          <QuickLinks items={items} />
+        </ScrollFade>
+        <ul className="flex shrink-0 items-center gap-5 whitespace-nowrap text-sm font-medium">
           {EXTRA_LINKS.map((link) => (
             <li key={link.url}>
               <Link

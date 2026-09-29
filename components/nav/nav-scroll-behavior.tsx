@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-// Desktop: tier 1 scrolls away naturally (the nav is sticky at a negative offset),
+// Desktop (768px and up): tier 1 scrolls away naturally (the nav is sticky at a negative offset),
 // tiers 2 and 3 stay pinned. We only add a shadow once the pinned part sticks.
 // Mobile: hide the header on scroll down, show it again on scroll up.
 export function NavScrollBehavior() {
