@@ -73,7 +73,8 @@ export async function Nav() {
       </div>
 
       {/* Tier 2: logo, search pill, help, account, cart.
-          On mobile the search pill wraps onto its own full-width row. */}
+          On mobile the search pill wraps onto its own full-width row.
+          Categories on mobile live in the hamburger menu (MobileMenu). */}
       <Container className="flex flex-wrap items-center gap-x-2.5 gap-y-2 py-2 md:flex-nowrap md:gap-5">
         <MobileMenu items={items} />
 
@@ -121,23 +122,6 @@ export async function Nav() {
           </Suspense>
         </div>
       </Container>
-
-      {/* Mobile: swipeable category chips with edge fades */}
-      <div className="pb-2 md:hidden">
-        <Container>
-          <ScrollFade innerClassName="gap-2">
-            {items.map((item) => (
-              <Link
-                key={item.id}
-                href={item.url}
-                className="shrink-0 whitespace-nowrap rounded-full border border-border px-3.5 py-1.5 text-sm font-medium"
-              >
-                {item.title}
-              </Link>
-            ))}
-          </ScrollFade>
-        </Container>
-      </div>
 
       {/* Tier 3: category links scroll inside their own region; extra links stay fixed on the right */}
       <Container className="hidden md:flex items-center gap-6">

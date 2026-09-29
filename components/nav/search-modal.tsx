@@ -13,6 +13,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 import { Price } from "@/components/product/price";
@@ -112,6 +113,51 @@ function RotatingPlaceholder() {
   );
 }
 
+// Tailwind's md breakpoint (768px): the same point where the nav switches from the
+// hamburger layout to the full desktop header. At and above it = typewriter; below it = plain text.
+const DESKTOP_QUERY = "(min-width: 48rem)";
+
+function subscribeToDesktop(onChange: () => void) {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+const getDesktopSnapshot = () => window.matchMedia(DESKTOP_QUERY).matches;
+const getDesktopServerSnapshot = () => null;
+
+function SearchPlaceholder() {
+  const isDesktop = useSyncExternalStore<boolean | null>(
+    subscribeToDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot,
+  );
+
+  // Desktop header (md and up): typewriter
+  if (isDesktop === true) return <RotatingPlaceholder />;
+
+  // Hamburger layout (below md): plain text, no typewriter, no timers
+  if (isDesktop === false) {
+    return (
+      <span aria-hidden="true" className="min-w-0 truncate">
+        What are you looking for?
+      </span>
+    );
+  }
+
+  // Server render and first paint: CSS picks the text, so nothing flashes or mismatches
+  return (
+    <>
+      <span aria-hidden="true" className="min-w-0 truncate md:hidden">
+        What are you looking for?
+      </span>
+      <span aria-hidden="true" className="hidden min-w-0 items-center md:flex">
+        <span className="mr-1 shrink-0">{TRIGGER_PREFIX}</span>
+        <span className="truncate">{TRIGGER_TERMS[0]}</span>
+      </span>
+    </>
+  );
+}
+
 function SearchTrigger() {
   return (
     <DialogTrigger
@@ -121,7 +167,7 @@ function SearchTrigger() {
           className="flex h-11 w-full items-center gap-3 rounded-full bg-muted/70 px-5 text-sm text-foreground hover:bg-muted transition-colors"
         >
           <Search className="size-4 shrink-0" />
-          <RotatingPlaceholder />
+          <SearchPlaceholder />
           <span className="sr-only">Search</span>
         </button>
       }
