@@ -50,7 +50,7 @@ export async function Nav() {
   const items = await getNavItems();
   return (
     <nav
-      className="sticky top-0 z-30 w-full bg-background pt-[env(safe-area-inset-top,0px)] transition-shadow duration-250"
+      className="sticky top-0 md:-top-[33px] z-30 w-full bg-background pt-[env(safe-area-inset-top,0px)] transition-shadow duration-250"
       id="nav-outer"
     >
       <NavScrollBehavior />
