@@ -11,13 +11,13 @@ import type { MenuItem } from "@/lib/shopify/transforms/menu/types";
 
 import { NavAccount, NavAccountFallback } from "./account";
 import { CartIcon, CartIconFallback } from "./cart";
+import { LocaleBar } from "./locale-bar";
 import { MobileMenu } from "./mobile-menu";
 import { NavScrollBehavior } from "./nav-scroll-behavior";
 import { QuickLinks } from "./quick-links";
-import { LocaleBar } from "./locale-bar";
-import { ZipCode } from "./zip-code";
 import { ScrollFade } from "./scroll-fade";
 import { SearchModal } from "./search-modal";
+import { ZipCode } from "./zip-code";
 
 const FALLBACK_ITEMS: MenuItem[] = [
   {

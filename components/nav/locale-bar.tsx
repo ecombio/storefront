@@ -22,13 +22,7 @@ function UsFlag({ className = "" }: { className?: string }) {
   );
 }
 
-function StripeFlag({
-  colors,
-  dir,
-}: {
-  colors: [string, string, string];
-  dir: "h" | "v";
-}) {
+function StripeFlag({ colors, dir }: { colors: [string, string, string]; dir: "h" | "v" }) {
   return (
     <svg
       viewBox="0 0 40 27"
@@ -104,13 +98,11 @@ export function LocaleBar() {
       </button>
 
       <div className="flex items-center gap-2">
-        <span className="underline" aria-current="true">English</span>
+        <span className="underline" aria-current="true">
+          English
+        </span>
         <span aria-hidden="true">|</span>
-        <button
-          type="button"
-          title="Coming soon"
-          className="hover:opacity-70 transition-opacity"
-        >
+        <button type="button" title="Coming soon" className="hover:opacity-70 transition-opacity">
           Español
         </button>
       </div>
@@ -137,8 +129,8 @@ export function LocaleBar() {
 
           <div className="px-6 pb-2 pt-4">
             <p className="mb-4 text-muted-foreground">
-              Changing your location might affect your delivery address options,
-              price, product availability, and currency.
+              Changing your location might affect your delivery address options, price, product
+              availability, and currency.
             </p>
 
             {/* Search (static for now) */}

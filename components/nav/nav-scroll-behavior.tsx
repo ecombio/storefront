@@ -13,10 +13,8 @@ export function NavScrollBehavior() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Reveal is slower and eases out (gentle landing). Hide is a bit quicker.
-    const SHOW_TRANSITION =
-      "transform 550ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease";
-    const HIDE_TRANSITION =
-      "transform 300ms cubic-bezier(0.4, 0, 1, 1), box-shadow 300ms ease";
+    const SHOW_TRANSITION = "transform 550ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease";
+    const HIDE_TRANSITION = "transform 300ms cubic-bezier(0.4, 0, 1, 1), box-shadow 300ms ease";
 
     const setTransition = (value: string) => {
       nav.style.transition = reduceMotion ? "none" : value;
