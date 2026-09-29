@@ -26,13 +26,14 @@ import {
   ProductFormOptions,
   ProductFormPrice,
 } from "@/components/product-detail/product-form";
+import { ProductHighlights } from "@/components/product-detail/product-highlights";
 import {
   ProductInfoDescription,
   ProductInfoOptions,
 } from "@/components/product-detail/product-info";
 import {
   ColorImageCarouselItems,
-  ColorImageGrid,
+  ColorImageGalleryItems,
   ProductMedia,
 } from "@/components/product-detail/product-media";
 import { ProductPrice } from "@/components/product-detail/product-price";
@@ -129,7 +130,8 @@ function ProductMediaArea({
         otherImages={product.images}
         videos={product.videos}
         title={product.title}
-        className="lg:col-span-6"
+        className="lg:sticky lg:top-20 lg:col-span-6"
+        footer={<ProductHighlights />}
       />
     );
   }
@@ -139,10 +141,11 @@ function ProductMediaArea({
       otherImages={getSharedImages(product.images, product.options)}
       videos={product.videos}
       title={product.title}
-      className="lg:col-span-6"
+      className="lg:sticky lg:top-20 lg:col-span-6"
+      footer={<ProductHighlights />}
       desktopSlot={
         // Color image is the LCP slot; a pulsing skeleton flashes harder than an empty image canvas.
-        <Suspense fallback={<div className="aspect-square w-full" />}>
+        <Suspense fallback={<div className="aspect-[3/2] w-full shrink-0" />}>
           <ResolvedColorImageGrid
             product={product}
             selectedOptionsPromise={selectedOptionsPromise}
@@ -174,7 +177,7 @@ async function ResolvedColorImageGrid({
 }) {
   const image = getSelectedColorImage(product, await selectedOptionsPromise);
   if (!image) return null;
-  return <ColorImageGrid images={[image]} title={product.title} />;
+  return <ColorImageGalleryItems images={[image]} title={product.title} />;
 }
 
 async function ResolvedColorImageCarousel({

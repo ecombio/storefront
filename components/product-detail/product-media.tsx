@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "cn";
-import Image, { getImageProps } from "next/image";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { preload } from "react-dom";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import Image from "next/image";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { AutoPlayVideo } from "@/components/ui/auto-play-video";
 import { ImagePlaceholder } from "@/components/ui/image-placeholder";
@@ -23,34 +23,18 @@ function mediaKey(item: MediaItem) {
 }
 
 // The LCP image gets a preload link + eager + fetchpriority=high (`preload` alone no longer implies high).
-// Everything else stays lazy so the hidden viewport twin (mobile carousel vs desktop grid) never downloads.
+// Everything else stays lazy so the hidden viewport twin (mobile carousel vs desktop gallery) never downloads.
 const LCP_IMAGE_PROPS = { preload: true, fetchPriority: "high" } as const;
 
 const LAZY_IMAGE_PROPS = { loading: "lazy" } as const;
 
-const GRID_SIZES = "(min-width: 1024px) 25vw, 50vw";
-// Tailwind `lg`, where the 2x2 grid replaces the carousel.
-const DESKTOP_MEDIA = "(min-width: 1024px)";
-// The 2x2 desktop grid is entirely above the fold. Its non-LCP tiles stay `loading="lazy"` on the
-// <img> (so mobile never fetches them) but get a media-scoped preload so desktop requests all four
-// tiles at parse time instead of one at a time after layout. Uses getImageProps so the preload's
-// srcset/sizes match the <img> exactly and the browser reuses the response.
-const DESKTOP_GRID_PRELOAD_COUNT = 4;
+// The desktop gallery fills the 6-of-10 column at `lg`.
+const GALLERY_SIZES = "(min-width: 1024px) 60vw, 100vw";
 
-function preloadDesktopGridImage(image: ImageType) {
-  const { props } = getImageProps({
-    src: image.url,
-    alt: "",
-    fill: true,
-    sizes: GRID_SIZES,
-  });
-  preload(props.src, {
-    as: "image",
-    imageSrcSet: props.srcSet,
-    imageSizes: props.sizes,
-    media: DESKTOP_MEDIA,
-  });
-}
+// Desktop-only controls: visible on mouse hover, or when a control inside has keyboard focus.
+// Touch devices never show them; they see the counter only.
+const SHOW_ON_HOVER =
+  "opacity-0 transition-opacity group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100";
 
 function MediaImage({
   item,
@@ -208,7 +192,8 @@ function Carousel({
   );
 }
 
-function GridItem({
+// One slide of the desktop gallery: landscape frame, whole image visible.
+function GalleryItem({
   item,
   title,
   idx,
@@ -220,21 +205,31 @@ function GridItem({
   priority: boolean;
 }) {
   return (
-    <div className="relative w-full overflow-hidden aspect-square">
+    <div className="relative aspect-[3/2] w-full shrink-0 snap-start snap-always overflow-hidden bg-background">
       {item.type === "video" ? (
-        <MediaVideo item={item} sizes={GRID_SIZES} priority={priority} />
+        <MediaVideo item={item} sizes={GALLERY_SIZES} priority={priority} />
       ) : item.type === "placeholder" ? (
         <ImagePlaceholder className="size-full" />
       ) : (
         <LightboxTrigger item={item}>
-          <MediaImage item={item} title={title} idx={idx} sizes={GRID_SIZES} priority={priority} />
+          <MediaImage
+            item={item}
+            title={title}
+            idx={idx}
+            sizes={GALLERY_SIZES}
+            priority={priority}
+            className="object-contain"
+          />
         </LightboxTrigger>
       )}
     </div>
   );
 }
 
-function Grid({
+const ARROW_BUTTON =
+  "absolute top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-slate-700 text-white hover:bg-slate-900";
+
+function Gallery({
   mediaItems,
   title,
   hasColorSlot,
@@ -247,36 +242,152 @@ function Grid({
   interactive?: boolean;
   children?: ReactNode;
 }) {
-  // The color slot (children) occupies the first tile when present.
-  const firstTileOffset = hasColorSlot ? 1 : 0;
-  for (const [idx, item] of mediaItems.entries()) {
-    const tile = idx + firstTileOffset;
-    if (tile >= DESKTOP_GRID_PRELOAD_COUNT) break;
-    // Tile 0 is the LCP image and already preloaded via next/image's `preload` prop.
-    if (tile > 0 && item.type === "image") preloadDesktopGridImage(item.image);
-  }
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [itemCount, setItemCount] = useState(mediaItems.length);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-  const grid = (
-    <div className="grid grid-cols-2 gap-2.5">
-      {children}
-      {mediaItems.map((item, idx) => (
-        <GridItem
-          key={mediaKey(item)}
-          item={item}
-          title={title}
-          idx={idx}
-          priority={!hasColorSlot && idx === 0}
-        />
-      ))}
+  const goTo = (index: number) => {
+    if (!container) return;
+    const next = Math.min(Math.max(index, 0), itemCount - 1);
+    container.scrollTo({ left: next * container.offsetWidth, behavior: "smooth" });
+    setSelectedIndex(next);
+  };
+
+  useEffect(() => {
+    if (!container) return;
+
+    // The color image arrives via slot children, so count the rendered DOM, not just mediaItems.
+    const sync = () => {
+      const width = container.offsetWidth;
+      if (width === 0) return;
+      const total = Math.max(1, container.children.length);
+      setItemCount(total);
+      setSelectedIndex(Math.min(Math.max(0, Math.round(container.scrollLeft / width)), total - 1));
+    };
+
+    container.scrollTo({ left: 0 });
+    sync();
+
+    container.addEventListener("scroll", sync, { passive: true });
+    const resizeObserver = new ResizeObserver(sync);
+    resizeObserver.observe(container);
+    const mutationObserver = new MutationObserver(sync);
+    mutationObserver.observe(container, { childList: true });
+
+    return () => {
+      container.removeEventListener("scroll", sync);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [container]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      goTo(selectedIndex + 1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      goTo(selectedIndex - 1);
+    }
+  };
+
+  const gallery = (
+    <div className="group relative w-full">
+      <div
+        ref={setContainer}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={`${title} images`}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        className="scrollbar-hide flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {children}
+        {mediaItems.map((item, idx) => (
+          <GalleryItem
+            key={mediaKey(item)}
+            item={item}
+            title={title}
+            idx={idx}
+            priority={!hasColorSlot && idx === 0}
+          />
+        ))}
+      </div>
+
+      {itemCount > 1 && selectedIndex > 0 ? (
+        <button
+          type="button"
+          aria-label="Previous image"
+          onClick={() => goTo(selectedIndex - 1)}
+          className={cn(ARROW_BUTTON, "left-3", SHOW_ON_HOVER)}
+        >
+          <ChevronLeft className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+
+      {itemCount > 1 && selectedIndex < itemCount - 1 ? (
+        <button
+          type="button"
+          aria-label="Next image"
+          onClick={() => goTo(selectedIndex + 1)}
+          className={cn(ARROW_BUTTON, "right-3", SHOW_ON_HOVER)}
+        >
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+
+      {itemCount > 1 ? (
+        <div
+          className={cn(
+            "absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2",
+            SHOW_ON_HOVER,
+          )}
+        >
+          {Array.from({ length: itemCount }, (_, idx) => (
+            <button
+              type="button"
+              key={idx}
+              aria-label={`Go to image ${idx + 1}`}
+              aria-current={idx === selectedIndex}
+              onClick={() => goTo(idx)}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                idx === selectedIndex
+                  ? "w-10 bg-foreground"
+                  : "w-8 bg-foreground/25 hover:bg-foreground/50",
+              )}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      <span className="pointer-events-none absolute bottom-3 left-4 z-10 text-sm tabular-nums">
+        {selectedIndex + 1} / {itemCount}
+      </span>
+
+      {/* Decorative: the click falls through to the image, which opens the existing lightbox. */}
+      {interactive ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute bottom-3 right-3 z-10 text-foreground",
+            SHOW_ON_HOVER,
+          )}
+        >
+          <Maximize2 className="size-5" />
+        </span>
+      ) : null}
     </div>
   );
 
-  return interactive ? <Lightbox label={title}>{grid}</Lightbox> : grid;
+  return interactive ? <Lightbox label={title}>{gallery}</Lightbox> : gallery;
 }
 
-export function ColorImageGrid({ images, title }: { images: ImageType[]; title: string }) {
+// Desktop gallery slides for the selected color image(s).
+export function ColorImageGalleryItems({ images, title }: { images: ImageType[]; title: string }) {
   return images.map((image, idx) => (
-    <GridItem
+    <GalleryItem
       key={image.url}
       item={{ type: "image", image }}
       title={title}
@@ -312,6 +423,7 @@ export function ProductMedia({
   className,
   desktopSlot,
   mobileSlot,
+  footer,
 }: {
   otherImages: ImageType[];
   videos: Video[];
@@ -319,6 +431,7 @@ export function ProductMedia({
   className?: string;
   desktopSlot?: ReactNode;
   mobileSlot?: ReactNode;
+  footer?: ReactNode;
 }) {
   const sharedMediaItems: MediaItem[] = [
     ...videos.map((video): MediaItem => ({ type: "video", video })),
@@ -328,12 +441,13 @@ export function ProductMedia({
   const hasColorSlot = !!mobileSlot || !!desktopSlot;
   const isEmpty = sharedMediaItems.length === 0 && !hasColorSlot;
   const mediaItems: MediaItem[] = isEmpty ? [{ type: "placeholder" }] : sharedMediaItems;
+  const mediaSetKey = mediaItems.map(mediaKey).join(",");
 
   return (
     <div className={className}>
       <div className="lg:hidden">
         <Carousel
-          key={mediaItems.map(mediaKey).join(",")}
+          key={mediaSetKey}
           mediaItems={mediaItems}
           title={title}
           hasColorSlot={hasColorSlot}
@@ -342,15 +456,17 @@ export function ProductMedia({
         </Carousel>
       </div>
       <div className="hidden lg:block">
-        <Grid
+        <Gallery
+          key={mediaSetKey}
           mediaItems={mediaItems}
           title={title}
           hasColorSlot={hasColorSlot}
           interactive={!isEmpty}
         >
           {desktopSlot}
-        </Grid>
+        </Gallery>
       </div>
+      {footer}
     </div>
   );
 }
