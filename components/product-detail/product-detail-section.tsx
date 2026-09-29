@@ -21,6 +21,7 @@ import { BuyButtons, PurchaseOptions } from "@/components/product-detail/buy-but
 import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo";
 import { CompatibleAccessories } from "@/components/product-detail/compatible-accessories";
 import { ExpertReviewsSection } from "@/components/product-detail/expert-reviews-section";
+import { FloatingBuyBlock } from "@/components/product-detail/floating-buy-block";
 import { GiftCardPurchaseForm } from "@/components/product-detail/gift-card-purchase-form";
 import { ProductOpenGraph } from "@/components/product-detail/open-graph";
 import {
@@ -372,17 +373,14 @@ function ProductInfoContent({
         {product.isGiftCard ? (
           <GiftCardPurchaseForm />
         ) : (
-          <div
-            id="primary-buy-buttons"
-            className="sticky bottom-0 z-10 border-t border-border bg-background pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          >
+          <FloatingBuyBlock>
             <BuyButtons
               fallbackVariant={fallbackVariant}
               availableForSale={product.availableForSale}
               buyWithShop={shopConfig.pdp.buyWithShop.isEnabled}
               quantityPicker={shopConfig.pdp.quantityPicker.isEnabled}
             />
-          </div>
+          </FloatingBuyBlock>
         )}
       </div>
       {product.isGiftCard ? null : (
