@@ -48,9 +48,10 @@ function SearchTrigger() {
       render={
         <button
           type="button"
-          className="flex items-center justify-center text-foreground hover:text-foreground/80 transition-colors"
+          className="flex h-10 w-full items-center gap-3 rounded-full bg-muted px-4 text-sm text-foreground/60 hover:bg-muted/70 transition-colors"
         >
-          <Search className="size-5" />
+          <Search className="size-4 shrink-0" />
+          <span className="truncate">Search e-bikes, scooters, skateboards</span>
           <span className="sr-only">Search</span>
         </button>
       }
