@@ -1,63 +1,5 @@
 # Ecombio Storefront
 
-Next time, pull **before** you commit and push, so the push doesn't get rejected. Run these one block at a time in PowerShell.
-
-**1. Sync first**
-
-```powershell
-cd C:\Users\Admin\Ecombio\Storefront
-git pull --rebase --autostash origin main
-```
-
-`--autostash` temporarily sets aside uncommitted changes, pulls, then restores them, so you can do this even before committing.
-
-**2. Optional checks**
-
-```powershell
-pnpm lint
-pnpm build
-```
-
-**3. Stage, excluding `.env.local` and `.devin/`**
-
-```powershell
-git add -A
-git reset .env.local .devin
-git status
-```
-
-This is simpler than your `ls-files` loops. Read the `git status` output to confirm only the files you expect are staged.
-
-**4. Commit**
-
-```powershell
-git commit -m "Describe what changed"
-```
-
-**5. Push** (run each line separately, not pasted together)
-
-```powershell
-$t = gh auth token
-$h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
-git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
-```
-
-**6. Verify**
-
-```powershell
-git ls-remote origin main
-git log --oneline -1
-```
-
-The two hashes should match.
-
-**Tips:**
-
-- If the push is rejected again, run step 1 and push again.
-- The odd token dance is probably only needed if plain `git push origin main` fails. Since `gh auth login` sets up credentials, try `git push origin main` first.
-- Don't force push (`--force`) to fix a rejection unless you're sure what you're overwriting.
-- Commands like `gitstatus` need a space (`git status`). It worked in your paste, but type it with the space.
-
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
 
 | Item             | Where                                                   |
@@ -74,62 +16,71 @@ Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with N
 
 Pushes to `main` deploy to production on Vercel automatically, so only push work you are happy to publish.
 
-Plain `git push` exits with code 128 on this machine because the GitHub CLI credential helper hands nothing to git. Step 5 passes the `gh` token to git directly instead. The root cause is not fixed; once it is, `git push origin main` will do.
-
-Run everything in PowerShell. Paste one block at a time, copy only the command and never the `PS C:\...>` prompt, and never paste a token or secret anywhere, including chat.
-
-1. Go to the project folder and see what changed:
+Open PowerShell, change the message on the first line, and paste the whole block. Paste only the commands, never the `PS C:\...>` prompt, and never paste a token or secret anywhere, including chat.
 
 ```powershell
-cd C:\Users\Admin\Ecombio\Storefront
-git status
+& {
+  $msg = "Describe the change"   # <-- edit this line
+
+  Set-Location C:\Users\Admin\Ecombio\Storefront
+
+  git pull --rebase --autostash origin main
+  if ($LASTEXITCODE -ne 0) { Write-Host "STOPPED: pull failed"; return }
+
+  pnpm oxfmt
+  pnpm lint
+  if ($LASTEXITCODE -ne 0) { Write-Host "STOPPED: lint failed"; return }
+  pnpm build
+  if ($LASTEXITCODE -ne 0) { Write-Host "STOPPED: build failed"; return }
+
+  git add -A
+  git reset -q -- .env.local .devin
+  Write-Host "`nThese changes will be committed and pushed to PRODUCTION:"
+  git status --short
+  if ((Read-Host "Type y to continue") -ne "y") { Write-Host "STOPPED: nothing pushed (changes are still staged)"; return }
+
+  git commit -m $msg
+  if ($LASTEXITCODE -ne 0) { Write-Host "STOPPED: commit failed (nothing to commit?)"; return }
+
+  $t = gh auth token
+  $h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
+  git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
+  $pushed = $LASTEXITCODE
+  Remove-Variable t, h
+  if ($pushed -ne 0) { Write-Host "STOPPED: push failed"; return }
+
+  git ls-remote origin main
+  git rev-parse HEAD
+  Write-Host "`nIf the two hashes match, it landed. Watch the deploy: https://vercel.com/ecombiology/storefront/deployments"
+}
 ```
 
-2. For code changes, check the build locally before pushing (skip for README-only changes):
+What the block does, in order:
 
-```powershell
-pnpm lint
-pnpm build
-```
+1. Pulls the latest `main` (`--autostash` sets aside uncommitted work and restores it).
+2. Formats the code, then runs lint and the production build. It stops at the first failure.
+3. Stages everything except `.env.local` and `.devin/`, shows the list, and waits for you to type `y`. Anything else cancels before anything is committed or pushed.
+4. Commits, pushes with your GitHub CLI login, and prints the remote hash and your local hash. They should match.
+
+After it finishes:
+
+- Watch the build at https://vercel.com/ecombiology/storefront/deployments. If a build fails, the previous deployment stays live. Open the build log, fix the cause, and run the block again. If the cause was an environment variable, fix it in Vercel and use **Redeploy** from the deployment's menu (no new push needed).
+- Close the PowerShell window so any leftover variables are cleared.
+
+If something goes wrong:
+
+- **Stopped at lint or build:** fix the error it printed, then paste the block again.
+- **Push rejected (remote has newer commits):** paste the block again; the pull at the top picks them up.
+- **401 or permission error:** run `gh auth status`. If you are logged out, run `gh auth login`, then paste the block again.
+- **No error text shown:** PowerShell can hide git's output. Run `git push origin main 2>&1 | Out-String` to see it.
+- **A file you did not expect is listed:** answer anything other than `y` at the prompt, then run `git reset <path>` to unstage it.
+- Never use `--force` to get past a rejection unless you know exactly what you are overwriting.
+
+Why the push line is unusual: plain `git push` exits with code 128 on this machine because the GitHub CLI credential helper hands nothing to git, so the block passes the `gh` token to git directly. The root cause is not fixed. If plain `git push origin main` starts working, the token lines can be dropped.
 
 `pnpm build` needs the required variables in `.env.local`. With customer accounts enabled, the build fails if any of the three auth variables is missing, on Vercel as well as locally.
 
-3. Stage only the files you changed. Do not use `git add .`, and never stage `.env.local`. Leave the untracked `.devin/` folder out:
-
-```powershell
-git add README.md
-```
-
-4. Commit with a short message:
-
-```powershell
-git commit -m "Describe the change"
-```
-
-5. Push using the GitHub CLI login:
-
-```powershell
-$t = gh auth token
-$h = "Authorization: Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
-git -c credential.helper= -c credential.https://github.com.helper= -c "http.extraheader=$h" push origin main
-```
-
-6. Confirm it landed. The two hashes should match:
-
-```powershell
-git ls-remote origin main
-git log --oneline -1
-```
-
-7. Watch the build at https://vercel.com/ecombiology/storefront/deployments. If a build fails, the previous deployment stays live. Open the build log, fix the cause, and push again. If the cause was an environment variable, fix it in Vercel and use **Redeploy** from the deployment's menu (no new push needed).
-
-8. Close the PowerShell window so the token variable is cleared.
-
-If the push fails:
-
-- **401 or permission error:** run `gh auth status`. If you are logged out, run `gh auth login`, then repeat step 5.
-- **Remote has newer commits:** run `git pull --rebase origin main`, then repeat step 5.
-- **No output at all:** PowerShell can hide git's error text. Run `git push origin main 2>&1 | Out-String` to see it.
+For a README-only change, you can skip the checks by pasting a shorter version: keep the pull, `git add README.md`, the commit, the push, and the verify lines.
 
 ## Local development
 
@@ -155,6 +106,24 @@ Feature flags and site identity live in `lib/config/index.ts`. Keep config keys 
 Localization is US / EN / `en-US`. The site URL is `https://ecombio.com`; other environments fall back to `http://localhost:3000`.
 
 The Shop Agent is a public chat assistant and every message can incur model charges. Enable it only with a card on file in Vercel AI Gateway, spending limits, and bot protection.
+
+## ZIP code and delivery estimate
+
+The nav ZIP button opens a modal (`components/nav/zip-code.tsx`, a native `<dialog>`) with two views: update ZIP code, and switch country.
+
+| File                               | Role                                                                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `lib/zip/use-zip-code.ts`          | `useZipCode()` hook and `saveZip()`. Stores the ZIP in `localStorage` (`ecombio-zip`) and notifies every component and tab. |
+| `lib/zip/use-country.ts`           | `useCountry()` hook and `saveCountry()`. Stores country and language in `localStorage` (`ecombio-country`).                 |
+| `lib/zip/countries.ts`             | The list of countries and languages offered in the picker. Edit it to the markets actually served.                          |
+| `components/delivery-estimate.tsx` | The "Ships in..., arrives in..." line under the product price. Reads the ZIP through `useZipCode()`.                        |
+
+Known limits:
+
+- **The delivery estimate is a placeholder.** `HANDLING_DAYS` and `DELIVERY_DAYS` in `delivery-estimate.tsx` are fixed strings, and the ZIP is only echoed back. Every ZIP gets the same promise. Replace them with real numbers, or build a real estimate from handling time (per product, for example a Shopify metafield with Storefront API access enabled), origin, carrier transit time by destination ZIP, and business-day rules in the warehouse time zone.
+- **The country and language picker only stores a choice.** It does not change prices, currency, or the site language. Wiring it to Shopify Markets or `next-intl` is a separate task (see Languages and regions).
+- **The ZIP form accepts 5-digit US ZIP codes only.**
+- **Flag images load from `flagcdn.com`.** Swap them for local SVGs if a strict Content-Security-Policy is added.
 
 ## Customer accounts
 
@@ -200,11 +169,11 @@ Values live in Vercel (Production and Preview) and `.env.local`, never in git. M
 ## How the storefront works
 
 - **Home:** fixed headline and description in the code, then the first eight products from the relevance-ranked `/collections/all` catalog. It is not a hand-picked list; point the grid at a Shopify collection to control it.
-- **Product pages:** variant choices are in the URL. Data is cached and refreshed by Shopify webhooks, so edits can lag until webhooks are registered. Bundles and complementary products show nothing until they exist in Shopify.
+- **Product pages:** variant choices are in the URL. Data is cached and refreshed by Shopify webhooks, so edits can lag until webhooks are registered. Bundles and complementary products show nothing until they exist in Shopify. The delivery estimate line renders under the price (see ZIP code and delivery estimate).
 - **Collections and search:** `/collections/[handle]` and `/search` have no toggles. Results are live, not cached. Collections and products must be published to the Headless channel. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
 - **Product card:** one shared tile for every grid, so a visual change affects every page. Assign an image to each color variant in Shopify so filtered cards show the matching color.
 - **Content pages:** Shopify Pages at `/pages/[handle]`, policies at `/policies/[handle]`, blogs at `/blogs/[blogHandle]`. Edit them in Shopify. The webhook handler does not refresh them, so edits can stay cached. There is no `/blogs` index; link to a specific blog. Unknown handles return a 404.
-- **Navigation:** the header has a single Shop link in code, plus search, cart, and the account link. To manage menus in Shopify instead, use the `/vercel-shop:enable-shopify-menus` skill from a coding agent, then review the diff and test before pushing.
+- **Navigation:** the header has a single Shop link in code, plus search, cart, the ZIP button, and the account link. To manage menus in Shopify instead, use the `/vercel-shop:enable-shopify-menus` skill from a coding agent, then review the diff and test before pushing.
 - **Footer:** the store name and a link to every Shopify policy that has content. Social links and menu columns are optional.
 - **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Shopify decides prices, discounts, and availability, and hosts checkout.
 
@@ -222,7 +191,7 @@ Do the test order on the current checkout first. The customer-account callback a
 
 The storefront is single-language: US / EN / `en-US`, clean URLs such as `/products/...`, and copy written inside the component that shows it. There is no central translation file, so to change wording, search the repo for the text you see on the site. After changing a message that depends on a count, check zero, one, and many, plus loading, empty, and error states.
 
-Country and language configure Shopify requests. Locale only controls number and date formatting. Prices use the currency Shopify returns; changing the locale does not convert them. Product and content translations are done in Shopify, not in the code.
+Country and language configure Shopify requests. Locale only controls number and date formatting. Prices use the currency Shopify returns; changing the locale does not convert them. Product and content translations are done in Shopify, not in the code. The country and language picker in the ZIP modal does not yet change any of this.
 
 Options if more languages or regions are needed (each is a skill a coding agent runs; read the skill page first):
 
@@ -265,9 +234,12 @@ Done:
 - [x] Ecombio branding and root-domain canonicals
 - [x] Customer accounts: Shopify client, callback and logout URIs, env vars, and deployment
 - [x] Webhooks: product and collection webhooks registered in Shopify (JSON, API version 2026-07) to https://ecombio.com/api/webhooks/shopify; SHOPIFY_WEBHOOK_SECRET set in Production; unsigned requests return 401
+- [x] ZIP code modal with switch country view, and delivery estimate line under the product price (placeholder numbers)
 
 Remaining:
 
+- [ ] Delivery estimate: replace the placeholder handling and delivery days with real numbers, or build the ZIP-based estimate
+- [ ] Country and language picker: connect it to Shopify Markets / i18n, or hide it until it does something
 - [ ] Sign-in test: `/account/login` redirects to Shopify with `redirect_uri=https://ecombio.com/account/authorize` (verified). Still to confirm in a browser: sign in with the emailed code, check profile, orders, addresses, and logout
 - [ ] Cart test: add, change quantity, remove, discount code, cart carries over after sign-in
 - [ ] Checkout test: full test order on the live site, including Shop Pay
