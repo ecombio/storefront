@@ -15,7 +15,7 @@ export function NavScrollBehavior() {
     nav.style.transition = reduceMotion ? "none" : "transform 250ms ease, box-shadow 250ms ease";
 
     const THRESHOLD = 8; // ignore tiny scroll jitters (px)
-    const UTILITY_BAR_HEIGHT = 33; // tier 1 height (h-8 + 1px border); keep in sync with index.tsx
+    const UTILITY_BAR_HEIGHT = 32; // tier 1 height (h-8); keep in sync with index.tsx
     let lastY = window.scrollY;
     let ticking = false;
 
