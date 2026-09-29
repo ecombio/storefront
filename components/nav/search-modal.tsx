@@ -42,16 +42,81 @@ export function SearchModal() {
   );
 }
 
+const TRIGGER_PREFIX = "Search for";
+const TRIGGER_TERMS = ["e-bikes", "electric scooters", "electric skateboards", "accessories & parts"];
+const TYPE_MS = 70; // delay per typed character
+const DELETE_MS = 20; // delay per deleted character
+const HOLD_MS = 1800; // how long a finished term stays
+// Color of the last, 2nd-last, 3rd-last letter while typing/deleting (dark text blending into an accent).
+const TRAIL_COLORS = ["#c9b0f5", "#a57ef0", "#6d3fc4"];
+
+type TypePhase = "typing" | "holding" | "deleting";
+
+// "Search for" stays fixed; only the term after it types, holds, deletes, and swaps.
+function RotatingPlaceholder() {
+  const [termIndex, setTermIndex] = useState(0);
+  const [charCount, setCharCount] = useState(TRIGGER_TERMS[0].length);
+  const [phase, setPhase] = useState<TypePhase>("holding");
+
+  useEffect(() => {
+    const term = TRIGGER_TERMS[termIndex];
+    let timer: ReturnType<typeof setTimeout>;
+
+    if (phase === "holding") {
+      timer = setTimeout(() => setPhase("deleting"), HOLD_MS);
+    } else if (phase === "deleting") {
+      if (charCount > 0) {
+        timer = setTimeout(() => setCharCount(charCount - 1), DELETE_MS);
+      } else {
+        timer = setTimeout(() => {
+          setTermIndex((termIndex + 1) % TRIGGER_TERMS.length);
+          setPhase("typing");
+        }, 250);
+      }
+    } else if (charCount < term.length) {
+      timer = setTimeout(() => setCharCount(charCount + 1), TYPE_MS);
+    } else {
+      timer = setTimeout(() => setPhase("holding"), 0);
+    }
+    return () => clearTimeout(timer);
+  }, [phase, termIndex, charCount]);
+
+  const chars = TRIGGER_TERMS[termIndex].slice(0, charCount).split("");
+  const moving = phase !== "holding";
+
+  return (
+    <span aria-hidden="true" className="flex min-w-0 items-center">
+      <span className="mr-1 shrink-0">{TRIGGER_PREFIX}</span>
+      <span className="truncate whitespace-pre">
+        {chars.map((char, i) => {
+          // While typing or deleting, the last few letters shift toward the accent color.
+          const fromEnd = chars.length - 1 - i;
+          const color = moving ? TRAIL_COLORS[fromEnd] : undefined;
+          return (
+            <span
+              key={i}
+              className={moving ? undefined : "transition-colors duration-300"}
+              style={{ color }}
+            >
+              {char}
+            </span>
+          );
+        })}
+      </span>
+    </span>
+  );
+}
+
 function SearchTrigger() {
   return (
     <DialogTrigger
       render={
         <button
           type="button"
-          className="flex h-10 w-full items-center gap-3 rounded-full bg-muted px-4 text-sm text-foreground/60 hover:bg-muted/70 transition-colors"
+          className="flex h-11 w-full items-center gap-3 rounded-full bg-muted/70 px-5 text-sm text-foreground hover:bg-muted transition-colors"
         >
           <Search className="size-4 shrink-0" />
-          <span className="truncate">Search e-bikes, scooters, skateboards</span>
+          <RotatingPlaceholder />
           <span className="sr-only">Search</span>
         </button>
       }

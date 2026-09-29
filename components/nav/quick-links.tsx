@@ -40,7 +40,7 @@ export function QuickLinks({ items }: { items: MenuItem[] }) {
   );
 }
 
-const TRIGGER_CLASS = "flex items-center gap-1 text-sm hover:opacity-70 transition-opacity";
+const TRIGGER_CLASS = "flex items-center gap-1 text-sm font-medium hover:opacity-70 transition-opacity";
 
 function NavItem({ item }: { item: MenuItem }) {
   if (item.items.length === 0) {

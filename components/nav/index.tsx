@@ -1,4 +1,5 @@
 import { PredictiveSearchProvider } from "@shopify/hydrogen/react";
+import { LifeBuoy, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -28,13 +29,13 @@ const FALLBACK_ITEMS: MenuItem[] = [
 
 // Tier 1 (thin utility bar). Edit the text and URLs; make sure each URL exists.
 const UTILITY_LINKS = [
-  { label: "The Ecombio Promise", url: "/pages/contact" },
-  { label: "Shipping & returns", url: "/policies/contact-information" },
-  { label: "Journal", url: "/blogs/ecombio" },
+  { label: "The Ecombio Promise", url: "/pages/contact", icon: ShieldCheck },
+  { label: "Shipping & returns", url: "/policies/contact-information", icon: null },
+  { label: "Journal", url: "/blogs/ecombio", icon: null },
 ];
 
 // Tier 3, right side (highlighted links).
-const EXTRA_LINKS = [{ label: "Support", url: "/pages/contact" }];
+const EXTRA_LINKS = [{ label: "Support", url: "/pages/contact", icon: LifeBuoy }];
 
 async function getNavItems(): Promise<MenuItem[]> {
   try {
@@ -56,9 +57,14 @@ export async function Nav() {
 
       {/* Tier 1: utility bar (desktop only) */}
       <div className="hidden md:block border-b border-border/50">
-        <Container className="flex h-8 items-center gap-6 text-xs">
+        <Container className="flex h-8 items-center gap-6 text-xs font-medium">
           {UTILITY_LINKS.map((link) => (
-            <Link key={link.url} href={link.url} className="hover:opacity-70 transition-opacity">
+            <Link
+              key={link.url}
+              href={link.url}
+              className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+            >
+              {link.icon && <link.icon className="size-3.5" aria-hidden="true" />}
               {link.label}
             </Link>
           ))}
@@ -77,8 +83,8 @@ export async function Nav() {
         >
           <Image
             alt={shopConfig.site.name}
-            className="h-8 w-auto"
-            height={32}
+            className="h-9 w-auto"
+            height={36}
             priority
             src="/logo.svg"
             width={140}
@@ -98,7 +104,7 @@ export async function Nav() {
         )}
 
         <div className="flex items-center gap-5 ml-auto">
-          <Link href="/pages/contact" className="hidden lg:inline text-sm hover:opacity-70">
+          <Link href="/pages/contact" className="hidden lg:inline text-sm font-medium hover:opacity-70">
             Need help?
           </Link>
           {shopConfig.auth.isEnabled && (
@@ -118,7 +124,11 @@ export async function Nav() {
         <ul className="flex items-center gap-5 text-sm font-medium">
           {EXTRA_LINKS.map((link) => (
             <li key={link.url}>
-              <Link href={link.url} className="hover:opacity-70 transition-opacity">
+              <Link
+                href={link.url}
+                className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+              >
+                <link.icon className="size-4" aria-hidden="true" />
                 {link.label}
               </Link>
             </li>
