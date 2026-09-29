@@ -162,7 +162,7 @@ export const PRODUCT_FRAGMENT = gql(
     collections(first: 10) {
       edges {
         node {
-          handle
+          handle title
         }
       }
     }

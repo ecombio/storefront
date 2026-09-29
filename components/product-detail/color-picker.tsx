@@ -21,8 +21,8 @@ export function ColorPicker({
   const selectedValue = option.values.find((value) => value.selected)?.name ?? "";
   return (
     <div className={cn("grid gap-2.5", className)} {...props}>
-      <p className="text-sm font-medium text-foreground/70">
-        {option.name}: <span className="text-foreground">{selectedValue}</span>
+      <p className="text-sm font-semibold text-foreground">
+        {option.name}: <span className="font-normal text-foreground/60">{selectedValue}</span>
       </p>
       <div className="flex flex-wrap gap-2.5">
         {option.values.map((value) => {

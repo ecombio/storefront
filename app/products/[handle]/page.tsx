@@ -124,6 +124,11 @@ export default async function ProductPage({
         <Container className="bg-background">
           <Sections>
             <ProductDetailSection
+              collection={
+                product.collections.find(
+                  (c) => !["all", "frontpage", "best-sellers"].includes(c.handle),
+                ) ?? null
+              }
               product={product}
               selectedOptionsPromise={selectedOptionsPromise}
               variantPromise={variantPromise}

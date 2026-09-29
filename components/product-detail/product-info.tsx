@@ -28,6 +28,9 @@ function ProductInfoOptions({
   const isShopifyDefaultOption = (opt: OptionGroupState) =>
     opt.name === "Title" && opt.values.length === 1 && opt.values[0]?.name === "Default Title";
   const isSingleValueOption = (opt: OptionGroupState) => opt.values.length === 1;
+  // Short values (R, L, S, M) get compact square pills; longer ones get wide pills.
+  const layoutFor = (opt: OptionGroupState) =>
+    opt.values.every((v) => v.name.length <= 3) ? "square" : "wide";
   const renderable = options.filter((opt) => !isShopifyDefaultOption(opt));
   if (renderable.length === 0) return null;
 
@@ -38,24 +41,26 @@ function ProductInfoOptions({
     <div data-slot="product-info-options" className={className} {...props}>
       <div className={cn("grid", compact ? "gap-2.5" : "gap-5")}>
         {singleValueOptions.map((option) => (
-          <p key={option.name} className="text-sm font-medium text-foreground/70">
-            {option.name}: <span className="text-foreground">{option.values[0]?.name}</span>
+          <p key={option.name} className="text-sm font-semibold text-foreground">
+            {option.name}:{" "}
+            <span className="font-normal text-foreground/60">{option.values[0]?.name}</span>
           </p>
-        ))}
-
-        {colorOptions.map((option) => (
-          <ColorPicker
-            key={option.name}
-            hideImages={hideImages}
-            onSelectValue={onSelectValue}
-            option={option}
-          />
         ))}
 
         {otherOptions.map((option) => (
           <OptionPicker
             compact={compact}
             key={option.name}
+            layout={layoutFor(option)}
+            onSelectValue={onSelectValue}
+            option={option}
+          />
+        ))}
+
+        {colorOptions.map((option) => (
+          <ColorPicker
+            key={option.name}
+            hideImages={hideImages}
             onSelectValue={onSelectValue}
             option={option}
           />

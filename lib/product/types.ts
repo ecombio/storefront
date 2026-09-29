@@ -92,6 +92,7 @@ export interface ProductDetails extends ProductCard {
   category?: Category | null;
   categoryId?: string;
   collectionHandles: string[];
+  collections: { handle: string; title: string }[];
   compareAtPriceRange?: {
     maxVariantPrice: Money;
     minVariantPrice: Money;

@@ -346,5 +346,9 @@ export function transformShopifyProductDetails(product: ShopifyProduct): Product
     currencyCode: product.priceRange.minVariantPrice.currencyCode,
     categoryId: product.category?.id,
     collectionHandles: flattenConnection(product.collections).map((c) => c.handle),
+    collections: flattenConnection(product.collections).map((c) => ({
+      handle: c.handle,
+      title: c.title,
+    })),
   };
 }

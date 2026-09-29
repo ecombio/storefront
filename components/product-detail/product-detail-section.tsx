@@ -15,6 +15,7 @@ import { MinusIcon, PlusIcon } from "lucide-react";
 import { type ReactNode, Suspense } from "react";
 
 import { DeliveryEstimate } from "@/components/delivery-estimate";
+import { type BreadcrumbItem, Breadcrumbs } from "@/components/product-detail/breadcrumbs";
 import { BundleComponents, BundleParents } from "@/components/product-detail/bundle-components";
 import { BuyButtons, PurchaseOptions } from "@/components/product-detail/buy-buttons";
 import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo";
@@ -56,10 +57,12 @@ import type { ProductDetails, ProductVariant } from "@/lib/product/types";
 import { getNumericShopifyId } from "@/lib/shopify/id/server";
 
 export function ProductDetailSection({
+  collection,
   product,
   selectedOptionsPromise,
   variantPromise,
 }: {
+  collection?: { handle: string; title: string } | null;
   product: ProductDetails;
   selectedOptionsPromise: Promise<SelectedOptions>;
   variantPromise: Promise<ProductVariant | undefined>;
@@ -67,6 +70,11 @@ export function ProductDetailSection({
   // Yotpo's REST widget API expects the raw numeric Shopify product ID, not the GraphQL GID
   // (`gid://shopify/Product/123...`) that `product.id` holds elsewhere in this codebase.
   const numericProductId = getNumericShopifyId(product.id);
+  const breadcrumbs: BreadcrumbItem[] = [
+    { name: "Home", path: "/" },
+    ...(collection ? [{ name: collection.title, path: `/collections/${collection.handle}` }] : []),
+    { name: product.title, path: `/products/${product.handle}` },
+  ];
 
   return (
     <>
@@ -89,10 +97,7 @@ export function ProductDetailSection({
         price={product.priceRange.minVariantPrice}
       />
       <BreadcrumbSchema
-        items={[
-          { name: shopConfig.site.name, path: "/" },
-          { name: product.title, path: `/products/${product.handle}` },
-        ]}
+        items={[{ name: shopConfig.site.name, path: "/" }, ...breadcrumbs.slice(1)]}
       />
       <div className="grid gap-10 lg:grid-cols-10 lg:items-start lg:gap-5">
         <ProductMediaArea product={product} selectedOptionsPromise={selectedOptionsPromise} />
@@ -100,6 +105,7 @@ export function ProductDetailSection({
           product={product}
           variantPromise={variantPromise}
           numericProductId={numericProductId}
+          breadcrumbs={breadcrumbs}
         />
       </div>
       {numericProductId ? (
@@ -196,10 +202,12 @@ function ProductInfoArea({
   product,
   variantPromise,
   numericProductId,
+  breadcrumbs,
 }: {
   product: ProductDetails;
   variantPromise: Promise<ProductVariant | undefined>;
   numericProductId: string | null;
+  breadcrumbs: BreadcrumbItem[];
 }) {
   const { options, handle, descriptionHtml } = product;
   const uniformStock = product.allVariantsInStock;
@@ -214,7 +222,8 @@ function ProductInfoArea({
         data-uniform-price={product.hasUniformPricing}
       >
         <div data-slot="product-info-header">
-          <h1 className="text-foreground text-3xl">{product.title}</h1>
+          <Breadcrumbs items={breadcrumbs} />
+          <h1 className="text-foreground text-2xl">{product.title}</h1>
           {numericProductId ? (
             <div className="mt-2 min-h-5">
               <Suspense fallback={<div className="h-5" aria-hidden />}>
