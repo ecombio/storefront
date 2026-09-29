@@ -43,6 +43,7 @@ export function ZipCode() {
     setZip(draft);
     try {
       localStorage.setItem(STORAGE_KEY, draft);
+      window.dispatchEvent(new Event("ecombio-zip"));
     } catch {}
     setOpen(false);
   }
@@ -86,3 +87,4 @@ export function ZipCode() {
     </div>
   );
 }
+

@@ -14,6 +14,7 @@ import { cn } from "cn";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { type ReactNode, Suspense } from "react";
 
+import { DeliveryEstimate } from "@/components/delivery-estimate";
 import { BundleComponents, BundleParents } from "@/components/product-detail/bundle-components";
 import { BuyButtons, PurchaseOptions } from "@/components/product-detail/buy-buttons";
 import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo";
@@ -225,6 +226,7 @@ function ProductInfoArea({
               compareAtAmount={product.compareAtPriceRange?.minVariantPrice.amount}
             />
           ) : null}
+          <DeliveryEstimate />
         </div>
 
         {singleVariant ? (
