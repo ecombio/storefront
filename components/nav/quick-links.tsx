@@ -63,6 +63,7 @@ function NavItem({ item }: { item: MenuItem }) {
         <ChevronDown className="size-3" aria-hidden="true" />
       </MenuLink>
       <div
+        data-nav-dropdown=""
         className={cn(
           "absolute inset-x-0 top-full z-40",
           "invisible opacity-0",
