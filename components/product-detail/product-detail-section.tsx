@@ -131,7 +131,7 @@ function ProductMediaArea({
         videos={product.videos}
         title={product.title}
         className="lg:sticky lg:top-20 lg:col-span-6"
-        footer={<ProductHighlights />}
+        footer={<ProductHighlights badges={product.trustBadges} />}
       />
     );
   }
@@ -142,7 +142,7 @@ function ProductMediaArea({
       videos={product.videos}
       title={product.title}
       className="lg:sticky lg:top-20 lg:col-span-6"
-      footer={<ProductHighlights />}
+      footer={<ProductHighlights badges={product.trustBadges} />}
       desktopSlot={
         // Color image is the LCP slot; a pulsing skeleton flashes harder than an empty image canvas.
         <Suspense fallback={<div className="aspect-[3/2] w-full shrink-0" />}>

@@ -75,6 +75,29 @@ export const PRODUCT_FRAGMENT = gql(
         currencyCode
       }
     }
+    trustBadges: metafield(namespace: "custom", key: "trust_badges") {
+      references(first: 10) {
+        nodes {
+          ... on Metaobject {
+            fields {
+              key
+              value
+              reference {
+                ... on MediaImage {
+                  image {
+                    url
+                    altText
+                  }
+                }
+                ... on GenericFile {
+                  url
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     variantsCount {

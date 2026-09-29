@@ -68,6 +68,14 @@ export interface ProductCard {
   vendor?: string;
 }
 
+export interface TrustBadge {
+  title: string;
+  iconUrl?: string;
+  iconAlt?: string;
+  tooltip?: string;
+  href?: string;
+}
+
 export interface ProductDetails extends ProductCard {
   /** Sparse variant cache around the default variant; feeds Hydrogen's product form store. */
   adjacentVariants: ProductVariant[];
@@ -94,6 +102,7 @@ export interface ProductDetails extends ProductCard {
   };
   seo: SEO;
   tags: string[];
+  trustBadges?: TrustBadge[];
   updatedAt: string;
   /** Only populated by fetchProductWithVariants for Eve; the PDP and Markdown omit it. */
   variants?: ProductVariant[];

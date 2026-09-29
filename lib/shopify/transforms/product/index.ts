@@ -7,6 +7,7 @@ import type {
   OptionValueSwatch,
   ProductCard,
   ProductDetails,
+  TrustBadge,
   ProductOption,
   ProductVariant,
   ProductVariantComponent,
@@ -214,6 +215,52 @@ function hasUniformPriceRange(product: ShopifyProduct): boolean {
   return compareAtPriceRange.minVariantPrice.amount === compareAtPriceRange.maxVariantPrice.amount;
 }
 
+type ShopifyTrustBadgesMetafield = {
+  references?: {
+    nodes: Array<{
+      fields?: Array<{
+        key: string;
+        value: string | null;
+        reference?: {
+          image?: { url: string; altText?: string | null } | null;
+          url?: string;
+        } | null;
+      }>;
+    }>;
+  } | null;
+} | null;
+
+function transformTrustBadges(metafield: ShopifyTrustBadgesMetafield | undefined): TrustBadge[] {
+  const nodes = metafield?.references?.nodes ?? [];
+  const badges: TrustBadge[] = [];
+
+  for (const node of nodes) {
+    const fields = Object.fromEntries((node.fields ?? []).map((f) => [f.key, f]));
+    const title = fields.title?.value;
+    if (!title) continue;
+
+    let href: string | undefined;
+    if (fields.link?.value) {
+      try {
+        href = JSON.parse(fields.link.value).url || undefined;
+      } catch {
+        href = undefined;
+      }
+    }
+
+    const ref = fields.icon?.reference;
+    badges.push({
+      title,
+      iconUrl: ref?.image?.url ?? ref?.url,
+      iconAlt: ref?.image?.altText ?? title,
+      tooltip: fields.tooltip?.value || undefined,
+      href,
+    });
+  }
+
+  return badges;
+}
+
 export function transformShopifyProductDetails(product: ShopifyProduct): ProductDetails {
   const variants = product.variants
     ? flattenConnection(product.variants).map(transformVariant)
@@ -248,6 +295,9 @@ export function transformShopifyProductDetails(product: ShopifyProduct): Product
     variants,
     options: product.options.map(transformOption),
     tags: product.tags,
+    trustBadges: transformTrustBadges(
+      (product as { trustBadges?: ShopifyTrustBadgesMetafield }).trustBadges,
+    ),
     seo: {
       title: product.seo.title || product.title,
       description: product.seo.description || product.description,
