@@ -20,6 +20,7 @@ import { BundleComponents, BundleParents } from "@/components/product-detail/bun
 import { BuyButtons, PurchaseOptions } from "@/components/product-detail/buy-buttons";
 import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo";
 import { CompatibleAccessories } from "@/components/product-detail/compatible-accessories";
+import { ExpertReviewsSection } from "@/components/product-detail/expert-reviews-section";
 import { GiftCardPurchaseForm } from "@/components/product-detail/gift-card-purchase-form";
 import { ProductOpenGraph } from "@/components/product-detail/open-graph";
 import {
@@ -120,7 +121,12 @@ export function ProductDetailSection({
                 label: "Description",
                 content: (
                   <div className="[&_*]:max-w-none">
-                    <ProductInfoDescription descriptionHtml={product.descriptionHtml} />
+                    <div className="grid gap-10">
+                      <ProductInfoDescription descriptionHtml={product.descriptionHtml} />
+                      <Suspense fallback={<div className="min-h-48" aria-hidden />}>
+                        <ExpertReviewsSection handle={product.handle} />
+                      </Suspense>
+                    </div>
                   </div>
                 ),
               },

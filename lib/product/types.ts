@@ -68,6 +68,17 @@ export interface ProductCard {
   vendor?: string;
 }
 
+export interface ExpertReview {
+  sourceIconUrl?: string;
+  sourceName?: string;
+  thumbnailAlt?: string;
+  thumbnailUrl?: string;
+  title: string;
+  videoSources?: { mimeType: string; url: string }[];
+  videoUrl?: string;
+  viewCount?: string;
+}
+
 export interface TrustBadge {
   title: string;
   iconUrl?: string;

@@ -8,6 +8,7 @@ import type {
 
 import { shopConfig } from "@/lib/config";
 import type { CommerceLocale } from "@/lib/config/types";
+import type { ExpertReview } from "@/lib/product/types";
 import type {
   ProductCard,
   ProductDetails,
@@ -41,6 +42,10 @@ import type {
 } from "@/lib/shopify/operations/products/types";
 import { storefront } from "@/lib/shopify/storefront/server";
 import type { StorefrontVariables } from "@/lib/shopify/storefront/types";
+import {
+  type ExpertReviewsMetafield,
+  transformExpertReviews,
+} from "@/lib/shopify/transforms/expert-reviews";
 import {
   getSelectedColorFilterLabel,
   transformShopifyFilters,
@@ -693,4 +698,60 @@ export async function fetchProductOptionValues(ids: string[]): Promise<ProductOp
     byHandle.set(node.handle, options);
   }
   return byHandle;
+}
+
+const EXPERT_REVIEWS_QUERY = gql(
+  `#graphql
+  query expertReviews($handle: String!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      expertReviews: metafield(namespace: "custom", key: "expert_reviews") {
+        references(first: 20) {
+          nodes {
+            ... on Metaobject {
+              fields {
+                key
+                value
+                reference {
+                  ... on MediaImage {
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                  ... on Video {
+                    previewImage {
+                      url
+                    }
+                    sources {
+                      url
+                      mimeType
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`,
+);
+
+export async function fetchExpertReviews({
+  handle,
+  locale = shopConfig.localization,
+}: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<ExpertReview[]> {
+  const response = await storefront.request(EXPERT_REVIEWS_QUERY, {
+    locale,
+    variables: { handle },
+  });
+  assertStorefrontOk(response, "expertReviews");
+
+  return transformExpertReviews(
+    response.data.product?.expertReviews as ExpertReviewsMetafield | undefined,
+  );
 }

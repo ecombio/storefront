@@ -16,7 +16,10 @@ export function ProductTabs({ tabs }: { tabs: ProductTab[] }) {
         className="sticky top-[var(--header-offset,0px)] z-20 border-b border-border bg-background"
         style={{ transition: "var(--header-offset-transition, none)" }}
       >
-        <div role="tablist" className="flex gap-6 overflow-x-auto border-b border-border">
+        <div
+          role="tablist"
+          className="flex gap-6 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {tabs.map((tab) => (
             <button
               key={tab.id}

@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 
 import type { CommerceLocale } from "@/lib/config/types";
+import type { ExpertReview } from "@/lib/product/types";
 import type {
   ProductCard,
   ProductDetails,
@@ -9,6 +10,7 @@ import type {
   SelectedOption,
 } from "@/lib/product/types";
 import { getNumericShopifyId } from "@/lib/shopify/id/server";
+import { fetchExpertReviews } from "@/lib/shopify/operations/products/server";
 import {
   fetchComplementaryProducts,
   fetchProduct,
@@ -117,4 +119,15 @@ export async function getProductsByIds(params: {
   const products = await fetchProductsByIds(params);
   tagProducts(products);
   return products;
+}
+
+export async function getExpertReviews(params: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<ExpertReview[]> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("products", "metaobjects", `expert-reviews-${params.handle}`);
+
+  return fetchExpertReviews(params);
 }
