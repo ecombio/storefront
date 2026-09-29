@@ -1,17 +1,70 @@
 "use client";
 
-import { MapPin, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, MapPin, Search, X } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { COUNTRIES, flagUrl, getCountry } from "@/lib/zip/countries";
+import { saveCountry, useCountry } from "@/lib/zip/use-country";
 import { saveZip, useZipCode } from "@/lib/zip/use-zip-code";
+
+type View = "zip" | "country";
+
+function ModalHeader({
+  title,
+  onBack,
+  onClose,
+}: {
+  title: string;
+  onBack?: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="relative border-b border-border pb-4 text-center">
+      {onBack ? (
+        <button
+          type="button"
+          aria-label="Back"
+          onClick={onBack}
+          className="absolute left-0 top-1/2 -translate-y-1/2 hover:opacity-70"
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+      ) : null}
+      <h2 id="zip-modal-title" className="text-sm">
+        {title}
+      </h2>
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-70"
+      >
+        <X className="size-5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function Flag({ code }: { code: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={flagUrl(code)} alt="" width={20} height={14} className="h-3.5 w-5 object-cover" />
+  );
+}
 
 export function ZipCode() {
   const zip = useZipCode() ?? "";
+  const country = useCountry();
+  const current = getCountry(country.code);
+
+  const [view, setView] = useState<View>("zip");
   const [draft, setDraft] = useState("");
+  const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function openModal() {
+    setView("zip");
     setDraft(zip);
     dialogRef.current?.showModal();
     inputRef.current?.focus();
@@ -27,6 +80,10 @@ export function ZipCode() {
     saveZip(draft);
     closeModal();
   }
+
+  const others = COUNTRIES.filter(
+    (c) => c.code !== current.code && c.name.toLowerCase().includes(query.trim().toLowerCase()),
+  );
 
   return (
     <>
@@ -46,48 +103,133 @@ export function ZipCode() {
         onClick={(e) => {
           if (e.target === e.currentTarget) closeModal();
         }}
+        onClose={() => {
+          setView("zip");
+          setQuery("");
+        }}
         className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl bg-background p-0 text-foreground shadow-xl backdrop:bg-black/50"
       >
         <div className="p-6">
-          <div className="relative border-b border-border pb-4 text-center">
-            <h2 id="zip-modal-title" className="text-sm">
-              Delivery estimate
-            </h2>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={closeModal}
-              className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-70"
-            >
-              <X className="size-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          <form onSubmit={save} className="pt-5">
-            <p className="text-lg font-bold">Update ZIP code</p>
-            <p className="mt-1 mb-4 text-sm">
-              Delivery options and speed may vary depending on location.
-            </p>
-            <div className="flex gap-3">
-              <input
-                ref={inputRef}
-                inputMode="numeric"
-                maxLength={5}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value.replace(/\D/g, ""))}
-                placeholder="ZIP code"
-                aria-label="ZIP code"
-                className="h-12 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm"
-              />
+          {view === "zip" ? (
+            <>
+              <ModalHeader title="Delivery estimate" onClose={closeModal} />
+              <form onSubmit={save} className="pt-5">
+                <p className="text-lg font-bold">Update ZIP code</p>
+                <p className="mt-1 mb-4 text-sm">
+                  Delivery options and speed may vary depending on location.
+                </p>
+                <div className="flex gap-3">
+                  <input
+                    ref={inputRef}
+                    inputMode="numeric"
+                    maxLength={5}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value.replace(/\D/g, ""))}
+                    placeholder="ZIP code"
+                    aria-label="ZIP code"
+                    className="h-12 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={draft.length !== 5}
+                    className="h-12 rounded-md bg-foreground px-6 text-sm font-medium text-background disabled:opacity-40"
+                  >
+                    Update
+                  </button>
+                </div>
+              </form>
               <button
-                type="submit"
-                disabled={draft.length !== 5}
-                className="h-12 rounded-md bg-foreground px-6 text-sm font-medium text-background disabled:opacity-40"
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setView("country");
+                }}
+                className="mt-5 text-sm font-bold underline hover:opacity-70"
               >
-                Update
+                Switch country
               </button>
-            </div>
-          </form>
+            </>
+          ) : (
+            <>
+              <ModalHeader
+                title="Switch country"
+                onBack={() => setView("zip")}
+                onClose={closeModal}
+              />
+              <p className="pt-5 text-sm">
+                Changing your location might affect your delivery address options, price, product
+                availability, and currency.
+              </p>
+
+              <div className="relative mt-4">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search your country"
+                  aria-label="Search your country"
+                  className="h-11 w-full rounded-md border border-border bg-background pl-3 pr-10 text-sm"
+                />
+                <Search
+                  className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="mt-4 max-h-[45vh] overflow-y-auto pr-1">
+                <p className="text-sm font-bold">Current country &amp; language</p>
+                <div className="flex items-center justify-between border-b border-border py-3 text-sm">
+                  <span className="flex items-center gap-2">
+                    <Flag code={current.code} />
+                    {current.name}
+                  </span>
+                  <span className="relative flex items-center">
+                    <select
+                      aria-label="Language"
+                      value={country.language}
+                      onChange={(e) =>
+                        saveCountry({ code: current.code, language: e.target.value })
+                      }
+                      className="appearance-none bg-transparent pr-5 text-right"
+                    >
+                      {current.languages.map((language) => (
+                        <option key={language} value={language}>
+                          {language}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      className="pointer-events-none absolute right-0 size-4"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </div>
+
+                <ul>
+                  {others.map((c) => (
+                    <li key={c.code}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          saveCountry({ code: c.code, language: c.languages[0] });
+                          setView("zip");
+                        }}
+                        className="flex w-full items-center justify-between py-3 text-left text-sm hover:opacity-70"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Flag code={c.code} />
+                          {c.name}
+                        </span>
+                        <span>{c.languages[0]}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {others.length === 0 ? (
+                    <li className="py-3 text-sm">No countries match “{query}”.</li>
+                  ) : null}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </dialog>
     </>
