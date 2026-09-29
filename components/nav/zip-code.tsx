@@ -1,89 +1,95 @@
 "use client";
 
-import { MapPin } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { MapPin, X } from "lucide-react";
+import { useRef, useState } from "react";
 
-const STORAGE_KEY = "ecombio-zip";
+import { saveZip, useZipCode } from "@/lib/zip/use-zip-code";
 
 export function ZipCode() {
-  const [zip, setZip] = useState("");
+  const zip = useZipCode() ?? "";
   const [draft, setDraft] = useState("");
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setZip(saved);
-        setDraft(saved);
-      }
-    } catch {}
-  }, []);
+  function openModal() {
+    setDraft(zip);
+    dialogRef.current?.showModal();
+    inputRef.current?.focus();
+  }
 
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  function closeModal() {
+    dialogRef.current?.close();
+  }
 
   function save(e: React.FormEvent) {
     e.preventDefault();
     if (!/^\d{5}$/.test(draft)) return;
-    setZip(draft);
-    try {
-      localStorage.setItem(STORAGE_KEY, draft);
-      window.dispatchEvent(new Event("ecombio-zip"));
-    } catch {}
-    setOpen(false);
+    saveZip(draft);
+    closeModal();
   }
 
   return (
-    <div ref={ref} className="relative">
+    <>
       <button
         type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="dialog"
+        onClick={openModal}
         className="flex items-center gap-1.5 whitespace-nowrap underline hover:opacity-70 transition-opacity"
       >
         <MapPin className="size-3.5" aria-hidden="true" />
         {zip ? `Delivering to ${zip}` : "Update ZIP code"}
       </button>
 
-      {open && (
-        <form
-          onSubmit={save}
-          className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-border bg-background p-4 shadow-md"
-        >
-          <p className="mb-2 text-sm font-bold">Enter your ZIP code</p>
-          <input
-            autoFocus
-            inputMode="numeric"
-            maxLength={5}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.replace(/\D/g, ""))}
-            placeholder="90210"
-            className="mb-3 h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={draft.length !== 5}
-            className="h-10 w-full rounded-md bg-foreground text-sm font-medium text-background disabled:opacity-40"
-          >
-            Save
-          </button>
-        </form>
-      )}
-    </div>
+      <dialog
+        ref={dialogRef}
+        aria-labelledby="zip-modal-title"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) closeModal();
+        }}
+        className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl bg-background p-0 text-foreground shadow-xl backdrop:bg-black/50"
+      >
+        <div className="p-6">
+          <div className="relative border-b border-border pb-4 text-center">
+            <h2 id="zip-modal-title" className="text-sm">
+              Delivery estimate
+            </h2>
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={closeModal}
+              className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-70"
+            >
+              <X className="size-5" aria-hidden="true" />
+            </button>
+          </div>
+
+          <form onSubmit={save} className="pt-5">
+            <p className="text-lg font-bold">Update ZIP code</p>
+            <p className="mt-1 mb-4 text-sm">
+              Delivery options and speed may vary depending on location.
+            </p>
+            <div className="flex gap-3">
+              <input
+                ref={inputRef}
+                inputMode="numeric"
+                maxLength={5}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value.replace(/\D/g, ""))}
+                placeholder="ZIP code"
+                aria-label="ZIP code"
+                className="h-12 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm"
+              />
+              <button
+                type="submit"
+                disabled={draft.length !== 5}
+                className="h-12 rounded-md bg-foreground px-6 text-sm font-medium text-background disabled:opacity-40"
+              >
+                Update
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
+    </>
   );
 }

@@ -2,25 +2,32 @@
 
 import { useSyncExternalStore } from "react";
 
-const KEY = "ecombio-zip";
-const EVENT = "ecombio-zip";
+export const ZIP_KEY = "ecombio-zip";
+export const ZIP_EVENT = "ecombio-zip";
 
 const read = () => {
   try {
-    return localStorage.getItem(KEY);
+    return localStorage.getItem(ZIP_KEY);
   } catch {
     return null;
   }
 };
 
 const subscribe = (cb: () => void) => {
-  window.addEventListener(EVENT, cb);
+  window.addEventListener(ZIP_EVENT, cb);
   window.addEventListener("storage", cb);
   return () => {
-    window.removeEventListener(EVENT, cb);
+    window.removeEventListener(ZIP_EVENT, cb);
     window.removeEventListener("storage", cb);
   };
 };
+
+export function saveZip(zip: string) {
+  try {
+    localStorage.setItem(ZIP_KEY, zip);
+    window.dispatchEvent(new Event(ZIP_EVENT));
+  } catch {}
+}
 
 export function useZipCode() {
   return useSyncExternalStore(subscribe, read, () => null);
