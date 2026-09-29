@@ -56,7 +56,7 @@ export function ZipCode() {
         className="flex items-center gap-1.5 whitespace-nowrap underline hover:opacity-70 transition-opacity"
       >
         <MapPin className="size-3.5" aria-hidden="true" />
-        {zip ? `ZIP ${zip}` : "Update ZIP code"}
+        {zip ? `Delivering to ${zip}` : "Update ZIP code"}
       </button>
 
       {open && (
