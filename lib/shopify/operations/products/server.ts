@@ -755,3 +755,36 @@ export async function fetchExpertReviews({
     response.data.product?.expertReviews as ExpertReviewsMetafield | undefined,
   );
 }
+
+const TECHNICAL_SPECS_QUERY = gql(
+  `#graphql
+  query technicalSpecs($handle: String!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      technicalSpecs: metafield(namespace: "custom", key: "technical_specifications") {
+        reference {
+          ... on Page {
+            body
+          }
+        }
+      }
+    }
+  }
+`,
+);
+
+export async function fetchTechnicalSpecs({
+  handle,
+  locale = shopConfig.localization,
+}: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<string | null> {
+  const response = await storefront.request(TECHNICAL_SPECS_QUERY, {
+    locale,
+    variables: { handle },
+  });
+  assertStorefrontOk(response, "technicalSpecs");
+
+  const reference = response.data.product?.technicalSpecs?.reference;
+  return reference && "body" in reference ? reference.body : null;
+}

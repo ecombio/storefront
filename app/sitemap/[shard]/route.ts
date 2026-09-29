@@ -43,6 +43,7 @@ async function renderShard(
   const { items } = await getShopifySitemapPage(type, page);
 
   const entries = items
+    .filter((item) => !item.handle.startsWith("technical-specifications-"))
     .map((item) => {
       const loc = escapeXml(toAbsoluteUrl(item.pathname ?? `/${segment}/${item.handle}`));
       const lastmod = escapeXml(item.updatedAt);

@@ -43,6 +43,7 @@ import { ProductPrice } from "@/components/product-detail/product-price";
 import { ProductTabs } from "@/components/product-detail/product-tabs";
 import { ProductSchema } from "@/components/product-detail/schema";
 import { StickyBuyBar } from "@/components/product-detail/sticky-buy-bar";
+import { TechnicalSpecsSection } from "@/components/product-detail/technical-specs-section";
 import { BreadcrumbSchema } from "@/components/schema/breadcrumb-schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,6 +130,15 @@ export function ProductDetailSection({
                       </Suspense>
                     </div>
                   </div>
+                ),
+              },
+              {
+                id: "technical-specifications",
+                label: "Technical Specifications",
+                content: (
+                  <Suspense fallback={<div className="min-h-32" aria-hidden />}>
+                    <TechnicalSpecsSection handle={product.handle} />
+                  </Suspense>
                 ),
               },
             ]}
