@@ -38,6 +38,7 @@ import {
   ProductMedia,
 } from "@/components/product-detail/product-media";
 import { ProductPrice } from "@/components/product-detail/product-price";
+import { ProductTabs } from "@/components/product-detail/product-tabs";
 import { ProductSchema } from "@/components/product-detail/schema";
 import { StickyBuyBar } from "@/components/product-detail/sticky-buy-bar";
 import { BreadcrumbSchema } from "@/components/schema/breadcrumb-schema";
@@ -109,6 +110,24 @@ export function ProductDetailSection({
           breadcrumbs={breadcrumbs}
         />
       </div>
+
+      {product.descriptionHtml ? (
+        <div className="mt-10">
+          <ProductTabs
+            tabs={[
+              {
+                id: "description",
+                label: "Description",
+                content: (
+                  <div className="[&_*]:max-w-none">
+                    <ProductInfoDescription descriptionHtml={product.descriptionHtml} />
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      ) : null}
       {numericProductId ? (
         <div id="reviews" className="scroll-mt-24">
           <Suspense fallback={<div className="min-h-64" aria-hidden />}>

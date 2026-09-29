@@ -21,6 +21,20 @@ export function NavScrollBehavior() {
     };
     setTransition(SHOW_TRANSITION);
 
+    // Publish the header's visible height so sticky elements below it can follow it.
+    const root = document.documentElement;
+    const setOffset = (visible: boolean) => {
+      root.style.setProperty("--header-offset", visible ? `${nav.offsetHeight}px` : "0px");
+      root.style.setProperty(
+        "--header-offset-transition",
+        reduceMotion
+          ? "none"
+          : visible
+            ? "top 550ms cubic-bezier(0.22, 1, 0.36, 1)"
+            : "top 300ms cubic-bezier(0.4, 0, 1, 1)",
+      );
+    };
+
     const THRESHOLD = 8; // ignore tiny scroll jitters (px)
     const MOVE_TO_REOPEN = 6; // pointer travel (px) that reopens menus after a scroll
     let lastY = window.scrollY;
@@ -68,6 +82,7 @@ export function NavScrollBehavior() {
       if (y <= nav.offsetHeight) {
         setTransition(SHOW_TRANSITION);
         nav.style.transform = ""; // near the top: always visible
+        setOffset(true);
         lastY = y;
         return;
       }
@@ -76,9 +91,11 @@ export function NavScrollBehavior() {
       if (delta > 0) {
         setTransition(HIDE_TRANSITION);
         nav.style.transform = "translateY(-100%)";
+        setOffset(false);
       } else {
         setTransition(SHOW_TRANSITION);
         nav.style.transform = "";
+        setOffset(true);
       }
       lastY = y;
     };
@@ -103,6 +120,8 @@ export function NavScrollBehavior() {
       release();
       nav.style.transform = "";
       nav.style.transition = "";
+      root.style.removeProperty("--header-offset");
+      root.style.removeProperty("--header-offset-transition");
       nav.classList.remove("shadow-sm");
     };
   }, []);
