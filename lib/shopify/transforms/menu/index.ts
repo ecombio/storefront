@@ -13,6 +13,7 @@ function transformMenuItem(item: ShopifyMenuItem, storeDomain: string): MenuItem
     title: item.title,
     url: transformShopifyMenuItemUrl(item.url ?? null, item.type, storeDomain),
     type: item.type,
+    image: item.resource?.image ?? null,
     items: (item.items ?? []).map((child) => transformMenuItem(child, storeDomain)),
   };
 }

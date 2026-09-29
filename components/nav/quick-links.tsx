@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 
 import type { MenuItem } from "@/lib/shopify/transforms/menu/types";
 
+import { MenuCardImage } from "./menu-card-image";
+
 const MAX_COLUMNS = 5;
 
 interface MenuLinkProps {
@@ -71,38 +73,45 @@ function NavItem({ item }: { item: MenuItem }) {
         )}
       >
         <div className="px-5 lg:px-10 pb-5">
-          <div className="grid grid-cols-5 gap-5">
-            {columns.map((column) => (
-              <div key={column.id}>
-                {column.url ? (
-                  <MenuLink
-                    url={column.url}
-                    className="block text-sm font-semibold mb-3 hover:opacity-70 transition-opacity"
-                  >
-                    {column.title}
-                  </MenuLink>
-                ) : (
-                  <h3 className="text-sm font-semibold mb-3">{column.title}</h3>
-                )}
-                {column.items.length > 0 && (
-                  <ul className="space-y-2">
-                    {column.items.map((leaf) => (
-                      <li key={leaf.id}>
-                        <MenuLink
-                          url={leaf.url}
-                          className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {leaf.title}
-                        </MenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
+          <CategoryCards columns={columns} />
         </div>
+        {/* Page overlay: dark tint + blur, same look as the Liquid theme. Fades with the panel. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-full h-screen bg-[rgba(20,20,20,0.4)] backdrop-blur-[6px]"
+        />
       </div>
     </li>
+  );
+}
+
+function CategoryCards({ columns }: { columns: MenuItem[] }) {
+  return (
+    <div className="pt-4">
+      <p className="mb-3 text-xs font-bold">Categories</p>
+      <ul className="grid grid-cols-5 gap-4">
+        {columns.map((column) => (
+          <li key={column.id}>
+            <MenuLink url={column.url} className="group/card block">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+                <CardImage column={column} />
+              </div>
+              <span className="mt-2 block text-xs font-bold">{column.title}</span>
+            </MenuLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function CardImage({ column }: { column: MenuItem }) {
+  if (!column.image) return null;
+  return (
+    <MenuCardImage
+      url={column.image.url}
+      alt={column.image.altText ?? column.title}
+      title={column.title}
+    />
   );
 }

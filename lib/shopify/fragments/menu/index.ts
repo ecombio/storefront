@@ -8,7 +8,15 @@ export const MENU_ITEM_FIELDS_FRAGMENT = gql(`#graphql
     type
     tags
     resource {
-      ... on Collection { handle }
+      ... on Collection {
+        handle
+        image {
+          url
+          altText
+          width
+          height
+        }
+      }
       ... on Product { handle }
       ... on Page { handle }
     }
