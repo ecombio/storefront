@@ -11,7 +11,17 @@ export function NavScrollBehavior() {
     if (!nav) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    nav.style.transition = reduceMotion ? "none" : "transform 250ms ease, box-shadow 250ms ease";
+
+    // Reveal is slower and eases out (gentle landing). Hide is a bit quicker.
+    const SHOW_TRANSITION =
+      "transform 550ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease";
+    const HIDE_TRANSITION =
+      "transform 300ms cubic-bezier(0.4, 0, 1, 1), box-shadow 300ms ease";
+
+    const setTransition = (value: string) => {
+      nav.style.transition = reduceMotion ? "none" : value;
+    };
+    setTransition(SHOW_TRANSITION);
 
     const THRESHOLD = 8; // ignore tiny scroll jitters (px)
     const MOVE_TO_REOPEN = 6; // pointer travel (px) that reopens menus after a scroll
@@ -58,13 +68,20 @@ export function NavScrollBehavior() {
       nav.classList.toggle("shadow-sm", y > 0);
 
       if (y <= nav.offsetHeight) {
+        setTransition(SHOW_TRANSITION);
         nav.style.transform = ""; // near the top: always visible
         lastY = y;
         return;
       }
       if (Math.abs(delta) < THRESHOLD) return;
 
-      nav.style.transform = delta > 0 ? "translateY(-100%)" : "";
+      if (delta > 0) {
+        setTransition(HIDE_TRANSITION);
+        nav.style.transform = "translateY(-100%)";
+      } else {
+        setTransition(SHOW_TRANSITION);
+        nav.style.transform = "";
+      }
       lastY = y;
     };
 

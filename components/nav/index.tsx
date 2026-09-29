@@ -14,6 +14,8 @@ import { CartIcon, CartIconFallback } from "./cart";
 import { MobileMenu } from "./mobile-menu";
 import { NavScrollBehavior } from "./nav-scroll-behavior";
 import { QuickLinks } from "./quick-links";
+import { LocaleBar } from "./locale-bar";
+import { ZipCode } from "./zip-code";
 import { ScrollFade } from "./scroll-fade";
 import { SearchModal } from "./search-modal";
 
@@ -51,7 +53,7 @@ export async function Nav() {
   const items = await getNavItems();
   return (
     <nav
-      className="sticky top-0 md:-top-[32px] z-30 w-full border-b border-border bg-background pt-[env(safe-area-inset-top,0px)] transition-shadow duration-250"
+      className="sticky top-0 md:top-0 z-30 w-full border-b border-border bg-background pt-[env(safe-area-inset-top,0px)] transition-shadow duration-250"
       id="nav-outer"
     >
       <NavScrollBehavior />
@@ -69,6 +71,10 @@ export async function Nav() {
               {link.label}
             </Link>
           ))}
+          <div className="ml-auto flex items-center gap-4">
+            <ZipCode />
+            <LocaleBar />
+          </div>
         </Container>
       </div>
 
