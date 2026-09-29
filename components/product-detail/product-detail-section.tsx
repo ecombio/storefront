@@ -19,7 +19,7 @@ import { type BreadcrumbItem, Breadcrumbs } from "@/components/product-detail/br
 import { BundleComponents, BundleParents } from "@/components/product-detail/bundle-components";
 import { BuyButtons, PurchaseOptions } from "@/components/product-detail/buy-buttons";
 import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo";
-import { ComplementaryProducts } from "@/components/product-detail/complementary-products";
+import { CompatibleAccessories } from "@/components/product-detail/compatible-accessories";
 import { GiftCardPurchaseForm } from "@/components/product-detail/gift-card-purchase-form";
 import { ProductOpenGraph } from "@/components/product-detail/open-graph";
 import {
@@ -39,6 +39,7 @@ import {
 } from "@/components/product-detail/product-media";
 import { ProductPrice } from "@/components/product-detail/product-price";
 import { ProductSchema } from "@/components/product-detail/schema";
+import { StickyBuyBar } from "@/components/product-detail/sticky-buy-bar";
 import { BreadcrumbSchema } from "@/components/schema/breadcrumb-schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -243,6 +244,7 @@ function ProductInfoArea({
 
         {singleVariant ? (
           <ProductInfoContent
+            accessoriesSlot={<AccessoriesSlot handle={handle} isGiftCard={product.isGiftCard} />}
             priceSlot={
               !product.hasUniformPricing ? (
                 <Suspense fallback={<div className="h-7" aria-hidden />}>
@@ -257,6 +259,9 @@ function ProductInfoArea({
           <Suspense
             fallback={
               <ProductInfoFallback
+                accessoriesSlot={
+                  <AccessoriesSlot handle={handle} isGiftCard={product.isGiftCard} />
+                }
                 allInStock={allInStock}
                 hasOptions={hasOptions}
                 product={product}
@@ -264,7 +269,11 @@ function ProductInfoArea({
               />
             }
           >
-            <ResolvedProductInfo product={product} variantPromise={variantPromise} />
+            <ResolvedProductInfo
+              accessoriesSlot={<AccessoriesSlot handle={handle} isGiftCard={product.isGiftCard} />}
+              product={product}
+              variantPromise={variantPromise}
+            />
           </Suspense>
         )}
       </div>
@@ -272,12 +281,6 @@ function ProductInfoArea({
       {!product.isGiftCard && shopConfig.pdp.bundles.isEnabled ? (
         <BundleRelationships variant={product.defaultVariant} />
       ) : null}
-
-      {!product.isGiftCard && shopConfig.pdp.complementaryProducts.isEnabled ? (
-        <ComplementaryProducts handle={handle} limit={4} title="Pairs Well With" />
-      ) : null}
-
-      <ProductInfoDescription descriptionHtml={descriptionHtml} />
     </div>
   );
 }
@@ -298,21 +301,31 @@ async function ResolvedProductPrice({
 }
 
 async function ResolvedProductInfo({
+  accessoriesSlot,
   product,
   variantPromise,
 }: {
+  accessoriesSlot?: ReactNode;
   product: ProductDetails;
   variantPromise: Promise<ProductVariant | undefined>;
 }) {
-  return <ProductInfoContent product={product} selectedVariant={await variantPromise} />;
+  return (
+    <ProductInfoContent
+      accessoriesSlot={accessoriesSlot}
+      product={product}
+      selectedVariant={await variantPromise}
+    />
+  );
 }
 
 // The store is seeded from the URL-resolved variant so server HTML and client state agree on first paint.
 function ProductInfoContent({
+  accessoriesSlot,
   priceSlot,
   product,
   selectedVariant,
 }: {
+  accessoriesSlot?: ReactNode;
   priceSlot?: ReactNode;
   product: ProductDetails;
   selectedVariant: ProductVariant | undefined;
@@ -330,27 +343,39 @@ function ProductInfoContent({
           </div>
         ) : null}
         {hasOptions ? <ProductFormOptions handle={product.handle} /> : null}
+        {product.isGiftCard ? null : accessoriesSlot}
         {product.isGiftCard ? (
           <GiftCardPurchaseForm />
         ) : (
-          <BuyButtons
-            fallbackVariant={fallbackVariant}
-            availableForSale={product.availableForSale}
-            buyWithShop={shopConfig.pdp.buyWithShop.isEnabled}
-            quantityPicker={shopConfig.pdp.quantityPicker.isEnabled}
-          />
+          <div id="primary-buy-buttons">
+            <BuyButtons
+              fallbackVariant={fallbackVariant}
+              availableForSale={product.availableForSale}
+              buyWithShop={shopConfig.pdp.buyWithShop.isEnabled}
+              quantityPicker={shopConfig.pdp.quantityPicker.isEnabled}
+            />
+          </div>
         )}
       </div>
+      {product.isGiftCard ? null : (
+        <StickyBuyBar
+          targetId="primary-buy-buttons"
+          title={product.title}
+          price={<ProductFormPrice fallbackVariant={fallbackVariant} />}
+        />
+      )}
     </ProductForm>
   );
 }
 
 function ProductInfoFallback({
+  accessoriesSlot,
   showLabel,
   allInStock,
   hasOptions,
   product,
 }: {
+  accessoriesSlot?: ReactNode;
   allInStock: boolean;
   hasOptions: boolean;
   product: ProductDetails;
@@ -362,6 +387,7 @@ function ProductInfoFallback({
       {hasOptions ? (
         <ProductInfoOptions options={toStaticOptionGroups(product)} hideImages />
       ) : null}
+      {product.isGiftCard ? null : accessoriesSlot}
       {product.isGiftCard ? (
         <GiftCardPurchaseFormFallback />
       ) : (
@@ -475,5 +501,14 @@ function BuyButtonsFallback({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function AccessoriesSlot({ handle, isGiftCard }: { handle: string; isGiftCard: boolean }) {
+  if (isGiftCard || !shopConfig.pdp.complementaryProducts.isEnabled) return null;
+  return (
+    <Suspense fallback={<div className="h-40" aria-hidden />}>
+      <CompatibleAccessories handle={handle} />
+    </Suspense>
   );
 }

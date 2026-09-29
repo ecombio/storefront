@@ -95,7 +95,7 @@ export function BuyButtons({
         {quantityPicker ? (
           <div
             aria-label="Item quantity"
-            className="grid h-12 w-32 shrink-0 grid-cols-[3rem_2rem_3rem] rounded-lg bg-background ring-1 ring-border ring-inset"
+            className="grid h-12 w-32 shrink-0 grid-cols-[3rem_2rem_3rem] rounded-full bg-background ring-1 ring-border ring-inset"
             role="group"
           >
             <button
@@ -135,7 +135,7 @@ export function BuyButtons({
             missingRequiredPlan ||
             pending
           }
-          className="h-12 min-w-0 flex-1 justify-center data-[selection-unresolved=true]:disabled:opacity-100"
+          className="h-12 min-w-0 flex-1 justify-center rounded-full font-semibold tracking-widest uppercase data-[selection-unresolved=true]:disabled:opacity-100"
         >
           {getButtonText()}
         </Button>
@@ -145,7 +145,7 @@ export function BuyButtons({
           aria-busy={isBuyingNow || undefined}
           aria-disabled={buyNowUrl ? undefined : true}
           className={cn(
-            "flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-shop px-4 text-white transition-colors hover:bg-shop/85 aria-busy:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:opacity-50 data-[selection-unresolved=true]:aria-disabled:opacity-100",
+            "flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-shop px-4 text-white transition-colors hover:bg-shop/85 aria-busy:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:opacity-50 data-[selection-unresolved=true]:aria-disabled:opacity-100",
             !availableForSale && "invisible",
           )}
           data-selection-unresolved={isSelectionUnresolved}
