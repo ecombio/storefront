@@ -100,7 +100,7 @@ export async function Nav() {
         </Link>
 
         {shopConfig.search.isEnabled && (
-          <div className="order-last w-full md:order-none md:w-auto md:flex-1 md:max-w-xl">
+          <div className="order-last w-full md:order-none md:w-auto md:flex-1 md:min-w-0">
             <PredictiveSearchProvider
               debounceInMs={300}
               limit={3}
