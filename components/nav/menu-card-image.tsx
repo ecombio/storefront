@@ -1,21 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 // Tries: resized JPEG from Shopify's CDN -> original URL -> grey tile with the title.
 export function MenuCardImage({ url, alt, title }: { url: string; alt: string; title: string }) {
   const [attempt, setAttempt] = useState(0);
-  const ref = useRef<HTMLImageElement>(null);
 
   const joiner = url.includes("?") ? "&" : "?";
   const sources = [`${url}${joiner}width=600&format=jpg`, url];
-  const failed = () => setAttempt((n) => n + 1);
+  const failed = useCallback(() => setAttempt((n) => n + 1), []);
 
-  // Catch images that failed before React attached the error handler.
-  useEffect(() => {
-    const img = ref.current;
-    if (img && img.complete && img.naturalWidth === 0) failed();
-  }, [attempt]);
+  // Catch images that failed before React attached the error handler. A callback ref runs once
+  // each time a new <img> mounts (the key changes per attempt), so it needs no dependency array.
+  const checkImage = useCallback(
+    (img: HTMLImageElement | null) => {
+      if (img && img.complete && img.naturalWidth === 0) failed();
+    },
+    [failed],
+  );
 
   if (attempt >= sources.length) {
     return (
@@ -29,7 +31,7 @@ export function MenuCardImage({ url, alt, title }: { url: string; alt: string; t
     // eslint-disable-next-line @next/next/no-img-element
     <img
       key={attempt}
-      ref={ref}
+      ref={checkImage}
       src={sources[attempt]}
       alt={alt}
       loading="eager"
