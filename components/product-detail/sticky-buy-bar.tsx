@@ -15,13 +15,17 @@ export function StickyBuyBar({
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const el = document.getElementById(targetId);
-    if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      setVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
+    const update = () => {
+      const el = document.getElementById(targetId);
+      setVisible(!!el && el.getBoundingClientRect().bottom < 0);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, [targetId]);
 
   // Reuse the real Add to Cart button so cart logic, validation and the cart drawer stay in one place.
