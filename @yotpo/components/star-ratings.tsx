@@ -8,13 +8,13 @@
 //
 // Async Server Component; wrap it in <Suspense> where it's used.
 
-import { getProductRatingSummary } from '../client';
-import { yotpoConfig } from '../config';
-import { StarRow } from './star';
+import { getProductRatingSummary } from "../client";
+import { yotpoConfig } from "../config";
+import { StarRow } from "./star";
 
 export async function StarRating({
   productId,
-  href = '#reviews'
+  href = "#reviews",
 }: {
   productId: string;
   href?: string;
@@ -36,7 +36,7 @@ export async function StarRating({
   }
 
   const label = `${Number(averageScore.toFixed(1))} out of 5 stars, ${totalReviews} ${
-    totalReviews === 1 ? 'review' : 'reviews'
+    totalReviews === 1 ? "review" : "reviews"
   }. Jump to reviews`;
 
   return (
@@ -51,7 +51,7 @@ export async function StarRating({
       </span>
       <span className="h-4 w-px bg-neutral-400" />
       <span className="text-base font-bold text-black underline-offset-2 hover:underline">
-        {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
+        {totalReviews} {totalReviews === 1 ? "Review" : "Reviews"}
       </span>
     </a>
   );

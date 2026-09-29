@@ -105,7 +105,10 @@ export async function Nav() {
         )}
 
         <div className="flex items-center gap-5 ml-auto">
-          <Link href="/pages/contact" className="hidden whitespace-nowrap lg:inline text-sm font-medium hover:opacity-70">
+          <Link
+            href="/pages/contact"
+            className="hidden whitespace-nowrap lg:inline text-sm font-medium hover:opacity-70"
+          >
             Need help?
           </Link>
           {shopConfig.auth.isEnabled && (

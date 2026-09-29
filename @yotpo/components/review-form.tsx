@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // Path: @yotpo/components/review-form.tsx
 //
@@ -6,30 +6,30 @@
 // backdrop, inert page behind it) so it needs no extra UI dependency.
 // Posts to /api/yotpo/reviews, which validates and forwards to Yotpo.
 
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
 
-import { Star } from './star';
+import { Star } from "./star";
 
-type Status = 'idle' | 'submitting' | 'success' | 'error';
+type Status = "idle" | "submitting" | "success" | "error";
 
 const inputClass =
-  'w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-black placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black';
+  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-black placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black";
 
 export function WriteReviewButton({
   handle,
-  productTitle
+  productTitle,
 }: {
   handle: string;
   productTitle: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [hoverScore, setHoverScore] = useState(0);
 
   function open() {
-    setStatus('idle');
+    setStatus("idle");
     setError(null);
     dialogRef.current?.showModal();
   }
@@ -40,45 +40,45 @@ export function WriteReviewButton({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (status === 'submitting') return;
+    if (status === "submitting") return;
 
     if (score < 1) {
-      setError('Choose a star rating.');
+      setError("Choose a star rating.");
       return;
     }
 
     // React nulls `e.currentTarget` after the first await, so grab the form element now.
     const formEl = e.currentTarget;
     const form = new FormData(formEl);
-    setStatus('submitting');
+    setStatus("submitting");
     setError(null);
 
     try {
-      const res = await fetch('/api/yotpo/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/yotpo/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           handle,
           score,
-          name: form.get('name'),
-          email: form.get('email'),
-          title: form.get('title'),
-          content: form.get('content'),
-          website: form.get('website') // honeypot, real users leave it empty
-        })
+          name: form.get("name"),
+          email: form.get("email"),
+          title: form.get("title"),
+          content: form.get("content"),
+          website: form.get("website"), // honeypot, real users leave it empty
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setStatus('error');
-        setError(data.error ?? 'Something went wrong. Please try again.');
+        setStatus("error");
+        setError(data.error ?? "Something went wrong. Please try again.");
         return;
       }
-      setStatus('success');
+      setStatus("success");
       setScore(0);
       formEl.reset();
     } catch {
-      setStatus('error');
-      setError('Network error. Check your connection and try again.');
+      setStatus("error");
+      setError("Network error. Check your connection and try again.");
     }
   }
 
@@ -129,7 +129,7 @@ export function WriteReviewButton({
             </button>
           </div>
 
-          {status === 'success' ? (
+          {status === "success" ? (
             <div className="py-6 text-center">
               <p className="text-base font-bold">Thanks for your review.</p>
               <p className="mt-1 text-sm text-neutral-500">
@@ -161,7 +161,7 @@ export function WriteReviewButton({
                         checked={score === n}
                         onChange={() => setScore(n)}
                         className="sr-only"
-                        aria-label={`${n} ${n === 1 ? 'star' : 'stars'}`}
+                        aria-label={`${n} ${n === 1 ? "star" : "stars"}`}
                       />
                       <Star filled={n <= shown} className="h-7 w-7" />
                     </label>
@@ -234,7 +234,13 @@ export function WriteReviewButton({
               {/* Honeypot: hidden from people, tempting to bots. */}
               <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
                 <label htmlFor="yotpo-website">Website</label>
-                <input id="yotpo-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+                <input
+                  id="yotpo-website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
               </div>
 
               <p className="text-xs text-neutral-500">
@@ -257,10 +263,10 @@ export function WriteReviewButton({
                 </button>
                 <button
                   type="submit"
-                  disabled={status === 'submitting'}
+                  disabled={status === "submitting"}
                   className="rounded-full bg-black px-6 py-3 text-xs font-bold text-white hover:opacity-85 disabled:opacity-50"
                 >
-                  {status === 'submitting' ? 'Submitting…' : 'Submit review'}
+                  {status === "submitting" ? "Submitting…" : "Submit review"}
                 </button>
               </div>
             </form>

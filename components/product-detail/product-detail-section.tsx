@@ -9,6 +9,7 @@
 //
 // Uses the `@yotpo` path alias (mapped to `./@yotpo/index.ts` in tsconfig.json).
 
+import { ProductReviews, StarRating } from "@yotpo";
 import { cn } from "cn";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { type ReactNode, Suspense } from "react";
@@ -51,7 +52,6 @@ import {
 import { type SelectedOptions } from "@/lib/product/types";
 import type { ProductDetails, ProductVariant } from "@/lib/product/types";
 import { getNumericShopifyId } from "@/lib/shopify/id/server";
-import { ProductReviews, StarRating } from "@yotpo";
 
 export function ProductDetailSection({
   product,

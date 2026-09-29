@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // Path: @yotpo/components/reviews-browser.tsx
 //
@@ -6,23 +6,23 @@
 // search / rating filter / sort controls, and the review list with "Show more".
 // Filtering and sorting run in the browser over the reviews fetched by the server component.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import type { YotpoBottomline, YotpoReview } from '../types';
-import { WriteReviewButton } from './review-form';
-import { Star, StarRow } from './star';
+import type { YotpoBottomline, YotpoReview } from "../types";
+import { WriteReviewButton } from "./review-form";
+import { Star, StarRow } from "./star";
 
-type SortKey = 'recent' | 'highest' | 'lowest' | 'helpful';
+type SortKey = "recent" | "highest" | "lowest" | "helpful";
 
 const SORT_LABELS: Record<SortKey, string> = {
-  recent: 'Most recent',
-  highest: 'Highest rating',
-  lowest: 'Lowest rating',
-  helpful: 'Most helpful'
+  recent: "Most recent",
+  highest: "Highest rating",
+  lowest: "Lowest rating",
+  helpful: "Most helpful",
 };
 
 const controlClass =
-  'rounded-full border border-neutral-400 bg-white px-3 py-1.5 text-xs text-black focus:outline-none focus:ring-2 focus:ring-black';
+  "rounded-full border border-neutral-400 bg-white px-3 py-1.5 text-xs text-black focus:outline-none focus:ring-2 focus:ring-black";
 
 const time = (r: YotpoReview) => Date.parse(r.created_at) || 0;
 
@@ -31,7 +31,7 @@ function DistributionRow({
   count,
   total,
   active,
-  onToggle
+  onToggle,
 }: {
   star: number;
   count: number;
@@ -45,11 +45,11 @@ function DistributionRow({
       type="button"
       onClick={onToggle}
       aria-pressed={active}
-      aria-label={`${active ? 'Clear filter for' : 'Show'} ${star} star ${
-        star === 1 ? 'review' : 'reviews'
+      aria-label={`${active ? "Clear filter for" : "Show"} ${star} star ${
+        star === 1 ? "review" : "reviews"
       }, ${count} total`}
       className={`flex w-full items-center gap-2 rounded px-1 py-0.5 text-xs hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black ${
-        active ? 'bg-neutral-100' : ''
+        active ? "bg-neutral-100" : ""
       }`}
     >
       <span className="flex w-6 items-center justify-end gap-0.5 text-black">
@@ -66,13 +66,13 @@ function DistributionRow({
 
 function ReviewCard({ review }: { review: YotpoReview }) {
   // UTC keeps server and browser output identical (no hydration mismatch near midnight).
-  const date = new Date(review.created_at).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC'
+  const date = new Date(review.created_at).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
   });
-  const name = review.user?.display_name?.trim() || 'Anonymous';
+  const name = review.user?.display_name?.trim() || "Anonymous";
 
   return (
     <div className="flex gap-4 border-t border-neutral-100 py-5">
@@ -95,7 +95,7 @@ function ReviewCard({ review }: { review: YotpoReview }) {
         </div>
         {review.votes_up > 0 ? (
           <p className="mt-3 text-xs text-neutral-500">
-            {review.votes_up} {review.votes_up === 1 ? 'person' : 'people'} found this helpful
+            {review.votes_up} {review.votes_up === 1 ? "person" : "people"} found this helpful
           </p>
         ) : null}
       </div>
@@ -108,7 +108,7 @@ export function ReviewsBrowser({
   bottomline,
   handle,
   productTitle,
-  pageSize
+  pageSize,
 }: {
   reviews: YotpoReview[];
   bottomline: YotpoBottomline;
@@ -116,12 +116,12 @@ export function ReviewsBrowser({
   productTitle: string;
   pageSize: number;
 }) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [rating, setRating] = useState(0); // 0 = all ratings
-  const [sort, setSort] = useState<SortKey>('recent');
+  const [sort, setSort] = useState<SortKey>("recent");
   const [shown, setShown] = useState(pageSize);
 
-  const filtersActive = rating !== 0 || query.trim() !== '';
+  const filtersActive = rating !== 0 || query.trim() !== "";
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -132,11 +132,11 @@ export function ReviewsBrowser({
     });
     return list.sort((a, b) => {
       switch (sort) {
-        case 'highest':
+        case "highest":
           return b.score - a.score || time(b) - time(a);
-        case 'lowest':
+        case "lowest":
           return a.score - b.score || time(b) - time(a);
-        case 'helpful':
+        case "helpful":
           return b.votes_up - a.votes_up || time(b) - time(a);
         default:
           return time(b) - time(a);
@@ -145,7 +145,7 @@ export function ReviewsBrowser({
   }, [reviews, query, rating, sort]);
 
   function clearFilters() {
-    setQuery('');
+    setQuery("");
     setRating(0);
     setShown(pageSize);
   }
@@ -159,15 +159,13 @@ export function ReviewsBrowser({
     <>
       <div className="flex flex-wrap items-center justify-center gap-12 pb-6">
         <div className="text-center">
-          <div className="text-3xl font-bold text-black">
-            {bottomline.average_score.toFixed(1)}
-          </div>
+          <div className="text-3xl font-bold text-black">{bottomline.average_score.toFixed(1)}</div>
           <div className="my-1.5 flex justify-center">
             <StarRow score={bottomline.average_score} />
           </div>
           <div className="text-xs text-neutral-500">
-            Based on {bottomline.total_review}{' '}
-            {bottomline.total_review === 1 ? 'review' : 'reviews'}
+            Based on {bottomline.total_review}{" "}
+            {bottomline.total_review === 1 ? "review" : "reviews"}
           </div>
         </div>
 
@@ -231,7 +229,7 @@ export function ReviewsBrowser({
             <option value="0">All ratings</option>
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
-                {n} {n === 1 ? 'star' : 'stars'}
+                {n} {n === 1 ? "star" : "stars"}
               </option>
             ))}
           </select>
@@ -256,7 +254,7 @@ export function ReviewsBrowser({
 
       {filtersActive ? (
         <p className="mt-3 text-xs text-neutral-500" aria-live="polite">
-          {filtered.length} matching {filtered.length === 1 ? 'review' : 'reviews'}.{' '}
+          {filtered.length} matching {filtered.length === 1 ? "review" : "reviews"}.{" "}
           <button type="button" onClick={clearFilters} className="font-bold text-black underline">
             Clear filters
           </button>

@@ -43,7 +43,12 @@ export function SearchModal() {
 }
 
 const TRIGGER_PREFIX = "Search for";
-const TRIGGER_TERMS = ["e-bikes", "electric scooters", "electric skateboards", "accessories & parts"];
+const TRIGGER_TERMS = [
+  "e-bikes",
+  "electric scooters",
+  "electric skateboards",
+  "accessories & parts",
+];
 const TYPE_MS = 70; // delay per typed character
 const DELETE_MS = 20; // delay per deleted character
 const HOLD_MS = 1800; // how long a finished term stays

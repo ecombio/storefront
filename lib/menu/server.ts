@@ -36,7 +36,9 @@ function collectionHandle(url: string): string | null {
 }
 
 // Same as Liquid's collection.featured_image: collection image, else first product image.
-const PUBLIC_DOMAINS = ["ecombio.com", process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? ""].filter(Boolean);
+const PUBLIC_DOMAINS = ["ecombio.com", process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? ""].filter(
+  Boolean,
+);
 
 // Fallback: the public collection JSON the theme also relies on.
 async function fetchPublicCollectionImage(handle: string): Promise<MenuItemImage | null> {
@@ -45,11 +47,18 @@ async function fetchPublicCollectionImage(handle: string): Promise<MenuItemImage
       const res = await fetch(`https://${domain}/collections/${handle}.json`);
       if (!res.ok) continue;
       const json = (await res.json()) as {
-        collection?: { image?: { src: string; alt?: string | null; width?: number; height?: number } | null };
+        collection?: {
+          image?: { src: string; alt?: string | null; width?: number; height?: number } | null;
+        };
       };
       const image = json.collection?.image;
       if (!image?.src) continue;
-      return { url: image.src, altText: image.alt ?? null, width: image.width ?? null, height: image.height ?? null };
+      return {
+        url: image.src,
+        altText: image.alt ?? null,
+        width: image.width ?? null,
+        height: image.height ?? null,
+      };
     } catch {
       continue;
     }
@@ -67,7 +76,9 @@ async function fetchCollectionImage(handle: string): Promise<MenuItemImage | nul
     const collection = response.data.collection;
     image = collection?.image ?? collection?.products?.nodes?.[0]?.featuredImage ?? null;
     // TEMP DEBUG
-    console.log(`[menu-image] ${handle}: api collection=${collection ? "found" : "NOT FOUND"} image=${image ? "yes" : "no"}`);
+    console.log(
+      `[menu-image] ${handle}: api collection=${collection ? "found" : "NOT FOUND"} image=${image ? "yes" : "no"}`,
+    );
   } catch (error) {
     console.error(`[menu-image] ${handle}: api ERROR`, error);
   }

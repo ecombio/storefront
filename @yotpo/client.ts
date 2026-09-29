@@ -8,11 +8,11 @@
 // - All upstream calls time out after REQUEST_TIMEOUT_MS so a slow Yotpo can't stall a render
 //   or a review submission.
 
-import 'server-only';
-import { cacheLife, cacheTag } from 'next/cache';
+import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
 
-import { yotpoConfig } from './config';
-import type { YotpoProductReviews, YotpoRatingSummary } from './types';
+import { yotpoConfig } from "./config";
+import type { YotpoProductReviews, YotpoRatingSummary } from "./types";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
@@ -20,25 +20,25 @@ async function fetchProductReviews(
   appKey: string,
   productId: string,
   page: number,
-  perPage: number
+  perPage: number,
 ): Promise<YotpoProductReviews> {
-  'use cache';
+  "use cache";
   cacheLife({ stale: 300, revalidate: yotpoConfig.revalidateSeconds, expire: 86400 });
-  cacheTag('yotpo-reviews', `yotpo-reviews-${productId}`);
+  cacheTag("yotpo-reviews", `yotpo-reviews-${productId}`);
 
   const url =
     `${yotpoConfig.apiBaseUrl}/${encodeURIComponent(appKey)}` +
     `/products/${encodeURIComponent(productId)}/reviews.json?page=${page}&per_page=${perPage}`;
 
   const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`Yotpo API ${res.status} ${res.statusText}`);
 
   const json = (await res.json()) as { response?: Partial<YotpoProductReviews> };
   const bottomline = json.response?.bottomline;
-  if (!bottomline) throw new Error('Yotpo response missing bottomline');
+  if (!bottomline) throw new Error("Yotpo response missing bottomline");
 
   const dist = bottomline.star_distribution;
   return {
@@ -51,9 +51,9 @@ async function fetchProductReviews(
         2: dist?.[2] ?? 0,
         3: dist?.[3] ?? 0,
         4: dist?.[4] ?? 0,
-        5: dist?.[5] ?? 0
-      }
-    }
+        5: dist?.[5] ?? 0,
+      },
+    },
   };
 }
 
@@ -63,7 +63,7 @@ async function fetchProductReviews(
  */
 export async function getProductReviews(
   productId: string,
-  opts: { page?: number; perPage?: number } = {}
+  opts: { page?: number; perPage?: number } = {},
 ): Promise<YotpoProductReviews | null> {
   const appKey = yotpoConfig.appKey;
   if (!appKey) return null;
@@ -82,13 +82,13 @@ export async function getProductReviews(
  * the cache entry with the reviews section.
  */
 export async function getProductRatingSummary(
-  productId: string
+  productId: string,
 ): Promise<YotpoRatingSummary | null> {
   const data = await getProductReviews(productId);
   if (!data) return null;
   return {
     averageScore: data.bottomline.average_score,
-    totalReviews: data.bottomline.total_review
+    totalReviews: data.bottomline.total_review,
   };
 }
 
@@ -116,14 +116,14 @@ export async function submitReview(input: SubmitReviewInput): Promise<boolean> {
   if (!appKey) return false;
 
   if (!yotpoConfig.shopDomain) {
-    console.error('Yotpo create review skipped: NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN is not set');
+    console.error("Yotpo create review skipped: NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN is not set");
     return false;
   }
 
   try {
     const res = await fetch(yotpoConfig.createReviewUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       body: JSON.stringify({
         appkey: appKey,
@@ -136,16 +136,18 @@ export async function submitReview(input: SubmitReviewInput): Promise<boolean> {
         email: input.email,
         review_title: input.title,
         review_content: input.content,
-        review_score: input.score
-      })
+        review_score: input.score,
+      }),
     });
     if (!res.ok) {
-      console.error(`Yotpo create review failed: ${res.status} ${await res.text().catch(() => '')}`);
+      console.error(
+        `Yotpo create review failed: ${res.status} ${await res.text().catch(() => "")}`,
+      );
       return false;
     }
     return true;
   } catch (err) {
-    console.error('Yotpo create review error:', err);
+    console.error("Yotpo create review error:", err);
     return false;
   }
 }

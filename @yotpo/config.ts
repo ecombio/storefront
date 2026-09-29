@@ -11,18 +11,18 @@
 export const yotpoConfig = {
   appKey: process.env.NEXT_PUBLIC_YOTPO_APP_KEY ?? null,
   // Domain Yotpo knows your store by (Yotpo admin > Store settings). Adjust if it isn't the myshopify domain.
-  shopDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? '',
-  apiBaseUrl: 'https://api.yotpo.com/v1/widget',
-  createReviewUrl: 'https://api.yotpo.com/v1/widget/reviews',
+  shopDomain: process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? "",
+  apiBaseUrl: "https://api.yotpo.com/v1/widget",
+  createReviewUrl: "https://api.yotpo.com/v1/widget/reviews",
   reviewsFetchLimit: 50, // reviews requested from Yotpo per product (filters work on these)
   reviewsPerPage: 5, // reviews shown before "Show more reviews"
   revalidateSeconds: 3600,
   brand: {
-    primaryColor: '#000000',
-    starsColor: '#FFE000',
-    textColor: '#000000',
-    fontPrimary: 'var(--font-nunito-sans)',
-    fontSecondary: 'var(--font-nunito-sans)',
-    lineSeparatorStyle: 'smooth' as const
-  }
+    primaryColor: "#000000",
+    starsColor: "#FFE000",
+    textColor: "#000000",
+    fontPrimary: "var(--font-nunito-sans)",
+    fontSecondary: "var(--font-nunito-sans)",
+    lineSeparatorStyle: "smooth" as const,
+  },
 } as const;

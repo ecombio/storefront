@@ -9,15 +9,15 @@
 //   product ID from the handle, so the client can't post reviews to arbitrary products.
 // - The #reviews anchor lives on a wrapper in product-detail-section.tsx so it always exists.
 
-import { getProductReviews } from '../client';
-import { yotpoConfig } from '../config';
-import { WriteReviewButton } from './review-form';
-import { ReviewsBrowser } from './reviews-browser';
+import { getProductReviews } from "../client";
+import { yotpoConfig } from "../config";
+import { WriteReviewButton } from "./review-form";
+import { ReviewsBrowser } from "./reviews-browser";
 
 export async function ProductReviews({
   productId,
   handle,
-  productTitle
+  productTitle,
 }: {
   productId: string;
   handle: string;

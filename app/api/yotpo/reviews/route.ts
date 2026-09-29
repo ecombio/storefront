@@ -10,9 +10,9 @@
 //
 // The limiter runs AFTER validation, so mistyped forms don't burn a visitor's allowance.
 
+import { submitReview } from "@yotpo";
 import { NextResponse } from "next/server";
 
-import { submitReview } from "@yotpo";
 import { getProduct } from "@/lib/product/server";
 import { getNumericShopifyId } from "@/lib/shopify/id/server";
 
