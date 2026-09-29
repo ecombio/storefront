@@ -8,6 +8,7 @@ import type {
   ProductCard,
   ProductDetails,
   TrustBadge,
+  ProductSpec,
   ProductOption,
   ProductVariant,
   ProductVariantComponent,
@@ -261,6 +262,41 @@ function transformTrustBadges(metafield: ShopifyTrustBadgesMetafield | undefined
   return badges;
 }
 
+type ShopifySpecsMetafield = ShopifyTrustBadgesMetafield;
+
+function transformSpecs(metafield: ShopifySpecsMetafield | undefined): ProductSpec[] {
+  const nodes = metafield?.references?.nodes ?? [];
+  const specs: ProductSpec[] = [];
+
+  for (const node of nodes) {
+    const fields = Object.fromEntries((node.fields ?? []).map((f) => [f.key, f]));
+    const label = fields.label?.value;
+    const value = fields.value?.value;
+    if (!label || !value) continue;
+
+    let href: string | undefined;
+    if (fields.link?.value) {
+      try {
+        href = JSON.parse(fields.link.value).url || undefined;
+      } catch {
+        href = undefined;
+      }
+    }
+
+    const ref = fields.icon?.reference;
+    specs.push({
+      label,
+      value,
+      tooltip: fields.tooltip?.value || undefined,
+      iconUrl: ref?.image?.url ?? ref?.url,
+      iconAlt: ref?.image?.altText ?? label,
+      href,
+    });
+  }
+
+  return specs;
+}
+
 export function transformShopifyProductDetails(product: ShopifyProduct): ProductDetails {
   const variants = product.variants
     ? flattenConnection(product.variants).map(transformVariant)
@@ -298,6 +334,7 @@ export function transformShopifyProductDetails(product: ShopifyProduct): Product
     trustBadges: transformTrustBadges(
       (product as { trustBadges?: ShopifyTrustBadgesMetafield }).trustBadges,
     ),
+    specs: transformSpecs((product as { specs?: ShopifySpecsMetafield }).specs),
     seo: {
       title: product.seo.title || product.title,
       description: product.seo.description || product.description,

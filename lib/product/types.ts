@@ -76,6 +76,15 @@ export interface TrustBadge {
   href?: string;
 }
 
+export interface ProductSpec {
+  label: string;
+  value: string;
+  tooltip?: string;
+  iconUrl?: string;
+  iconAlt?: string;
+  href?: string;
+}
+
 export interface ProductDetails extends ProductCard {
   /** Sparse variant cache around the default variant; feeds Hydrogen's product form store. */
   adjacentVariants: ProductVariant[];
@@ -101,6 +110,7 @@ export interface ProductDetails extends ProductCard {
     minVariantPrice: Money;
   };
   seo: SEO;
+  specs?: ProductSpec[];
   tags: string[];
   trustBadges?: TrustBadge[];
   updatedAt: string;

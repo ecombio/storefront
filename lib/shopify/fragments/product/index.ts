@@ -98,6 +98,29 @@ export const PRODUCT_FRAGMENT = gql(
         }
       }
     }
+    specs: metafield(namespace: "custom", key: "product_specs") {
+      references(first: 12) {
+        nodes {
+          ... on Metaobject {
+            fields {
+              key
+              value
+              reference {
+                ... on MediaImage {
+                  image {
+                    url
+                    altText
+                  }
+                }
+                ... on GenericFile {
+                  url
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     variantsCount {

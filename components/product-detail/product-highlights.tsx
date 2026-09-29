@@ -1,29 +1,6 @@
-import {
-  BadgeCheck,
-  BatteryCharging,
-  Gauge,
-  Lock,
-  Route,
-  RotateCcw,
-  ShieldCheck,
-  Smartphone,
-  Truck,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
+import { BadgeCheck, RotateCcw, ShieldCheck, Truck, type LucideIcon } from "lucide-react";
 
-import type { TrustBadge } from "@/lib/product/types";
-
-type Spec = { icon: LucideIcon; label: string; value: string; note?: string };
-
-const SPECS: Spec[] = [
-  { icon: Zap, label: "Motor Power", value: "750W", note: "1440W Peak in Boost*" },
-  { icon: BatteryCharging, label: "Energy Recovery", value: "Regenerative Braking" },
-  { icon: Smartphone, label: "Wireless Connection", value: "4G/GPS" },
-  { icon: Lock, label: "Smart Security", value: "Theft Deterrence" },
-  { icon: Route, label: "Range", value: "Up to 75 Miles**" },
-  { icon: Gauge, label: "Top Speed", value: "Max 28 MPH" },
-];
+import type { ProductSpec, TrustBadge } from "@/lib/product/types";
 
 // Shown until custom.trust_badges returns data.
 const FALLBACK_BADGES: { icon: LucideIcon; label: string }[] = [
@@ -34,7 +11,9 @@ const FALLBACK_BADGES: { icon: LucideIcon; label: string }[] = [
 ];
 
 const TILE =
-  "flex h-full flex-1 items-center justify-center gap-2 bg-gray-50 px-2 py-2 text-left text-xs font-semibold leading-tight";
+  "flex h-full flex-1 items-center justify-start gap-2 bg-gray-50 px-2 py-2 text-left text-xs font-semibold leading-tight";
+
+const SPEC_ROW = "flex items-start gap-3";
 
 function BadgeTile({ badge }: { badge: TrustBadge }) {
   const content = (
@@ -69,23 +48,61 @@ function BadgeTile({ badge }: { badge: TrustBadge }) {
   );
 }
 
-export function ProductHighlights({ badges }: { badges?: TrustBadge[] }) {
+function SpecItem({ spec }: { spec: ProductSpec }) {
+  const content = (
+    <>
+      {spec.iconUrl ? (
+        <img
+          src={spec.iconUrl}
+          alt={spec.iconAlt || ""}
+          className="mt-0.5 size-7 shrink-0 object-contain"
+          loading="lazy"
+        />
+      ) : null}
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-[10px] tracking-wide uppercase">{spec.label}</p>
+        <p className="text-foreground text-sm font-semibold">{spec.value}</p>
+      </div>
+    </>
+  );
+
+  return (
+    <li title={spec.tooltip}>
+      {spec.href ? (
+        <a
+          href={spec.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${SPEC_ROW} hover:opacity-80`}
+        >
+          {content}
+        </a>
+      ) : (
+        <div className={SPEC_ROW}>{content}</div>
+      )}
+    </li>
+  );
+}
+
+export function ProductHighlights({
+  badges,
+  specs,
+}: {
+  badges?: TrustBadge[];
+  specs?: ProductSpec[];
+}) {
   const hasBadges = !!badges && badges.length > 0;
+  const hasSpecs = !!specs && specs.length > 0;
 
   return (
     <div className="mt-6 grid gap-6">
-      <ul className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
-        {SPECS.map(({ icon: Icon, label, value, note }) => (
-          <li key={label} className="flex items-start gap-3">
-            <Icon className="mt-0.5 size-7 shrink-0 text-foreground" aria-hidden="true" />
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] tracking-wide uppercase">{label}</p>
-              <p className="text-foreground text-sm font-semibold">{value}</p>
-              {note ? <p className="text-muted-foreground text-xs">{note}</p> : null}
-            </div>
-          </li>
-        ))}
-      </ul>
+      {hasSpecs ? (
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+          {specs.map((spec) => (
+            <SpecItem key={spec.label} spec={spec} />
+          ))}
+        </ul>
+      ) : null}
 
       <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         {hasBadges
