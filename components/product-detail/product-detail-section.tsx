@@ -162,7 +162,7 @@ function ProductMediaArea({
         otherImages={product.images}
         videos={product.videos}
         title={product.title}
-        className="lg:sticky lg:top-20 lg:col-span-6"
+        className="lg:sticky lg:top-20 lg:self-start lg:col-span-6"
         footer={<ProductHighlights badges={product.trustBadges} specs={product.specs} />}
       />
     );
@@ -173,7 +173,7 @@ function ProductMediaArea({
       otherImages={getSharedImages(product.images, product.options)}
       videos={product.videos}
       title={product.title}
-      className="lg:sticky lg:top-20 lg:col-span-6"
+      className="lg:sticky lg:top-20 lg:self-start lg:col-span-6"
       footer={<ProductHighlights badges={product.trustBadges} specs={product.specs} />}
       desktopSlot={
         // Color image is the LCP slot; a pulsing skeleton flashes harder than an empty image canvas.
@@ -242,7 +242,7 @@ function ProductInfoArea({
   const allInStock = product.defaultVariant?.availableForSale ?? product.availableForSale;
   const hasOptions = options.some((option) => option.values.length > 1);
   return (
-    <div className="grid gap-10 lg:sticky lg:top-20 lg:col-span-4">
+    <div className="grid gap-10 lg:col-span-4">
       <div
         className="grid data-[uniform-price=true]:gap-10"
         data-uniform-price={product.hasUniformPricing}
@@ -372,7 +372,10 @@ function ProductInfoContent({
         {product.isGiftCard ? (
           <GiftCardPurchaseForm />
         ) : (
-          <div id="primary-buy-buttons">
+          <div
+            id="primary-buy-buttons"
+            className="sticky bottom-0 z-10 border-t border-border bg-background pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
             <BuyButtons
               fallbackVariant={fallbackVariant}
               availableForSale={product.availableForSale}
