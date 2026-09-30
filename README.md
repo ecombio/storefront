@@ -69,6 +69,7 @@ After it finishes:
 
 If something goes wrong:
 
+- **`pnpm` is not recognized:** the terminal has not picked up the pnpm folder yet. Run `$env:Path = "$env:LOCALAPPDATA\pnpm\bin;$env:Path"`, or close VS Code completely and reopen it. A missing `pnpm` does not stop the block by itself, so lint and build are silently skipped. Check `pnpm --version` before typing `y`.
 - **Stopped at lint or build:** fix the error it printed, then paste the block again.
 - **Push rejected (remote has newer commits):** paste the block again; the pull at the top picks them up.
 - **401 or permission error:** run `gh auth status`. If you are logged out, run `gh auth login`, then paste the block again.
@@ -125,6 +126,39 @@ Known limits:
 - **The ZIP form accepts 5-digit US ZIP codes only.**
 - **Flag images load from `flagcdn.com`.** Swap them for local SVGs if a strict Content-Security-Policy is added.
 
+## Collection page extras
+
+Collection pages (`/collections/[handle]`) have three additions on top of the template. Each is driven by Shopify data and hides itself when that data is empty.
+
+| Feature                   | What it does                                                                                        | Files                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Products / Expert Advice tabs | Tab bar under the title: `Products (N)` and `Expert Advice (N)`. The Advice tab shows article cards. | `components/collections/collection-tabs.tsx`, `article-grid.tsx`               |
+| Sub-collection carousel   | Row of image tiles above the product grid, in the results column. Scrolls and snaps, with arrows.   | `components/collections/sub-collection-tiles.tsx`                              |
+| Product count             | The number in the Products tab label.                                                               | `getCollectionProductCount` in `lib/collections/server.ts`                     |
+
+Data flow: the route (`app/collections/[handle]/page.tsx`) fetches articles, the product count, and sub-collections together and passes them to `CollectionDetailPage` (`components/collections/collection-page.tsx`). The Shopify queries live in `lib/shopify/operations/collections/server.ts`. The cached helpers are `getCollectionArticles` in `lib/blog/server.ts` and `getCollectionSubCollections` in `lib/collections/server.ts`.
+
+### Shopify metafields
+
+Define these under Settings, Custom data, Collection metafield definitions. **Tick Storefront API access on each definition**, or the storefront cannot read it and the feature stays hidden.
+
+| Metafield                | Type                  | Used for                                            |
+| ------------------------ | --------------------- | --------------------------------------------------- |
+| `custom.posts`           | List of blog posts    | Articles on the Expert Advice tab                   |
+| `custom.sub_collections` | List of collections   | Tiles in the carousel                               |
+| `custom.after_item_lists`| Page reference        | Content shown below the results (template feature)  |
+
+Fill the fields in on each collection in Shopify admin (open the collection, then the metafields section). A collection with no posts shows no tab bar. A collection with no sub-collections shows no carousel.
+
+### Behavior worth knowing
+
+- **Tab state is in the URL hash** (`#advice`), not a query parameter, so it never interferes with filters or sort. Filters and sort apply to the Products tab only.
+- **Product count.** The Storefront API has no collection total, so `getCollectionProductCount` adds up the counts of the Availability filter (in stock plus out of stock). If that filter is off in Search & Discovery, it falls back to the search total, and if that fails the label shows `Products` with no number. The count is the collection total and does not change as filters are applied.
+- **Tile images** use the sub-collection's image, then its first product's image, then a placeholder. Set a proper image on each sub-collection in Shopify.
+- **Caching.** The helpers use `cacheLife("max")` and are tagged `collection-<handle>` (plus `articles` for posts), so edits in Shopify can lag until that tag is revalidated. If a change does not show up locally, clear `.next` and restart `pnpm dev`.
+- **Product image crop.** `components/collections/results-grid.tsx` crops product images to 5:4 on collection and all-products pages only, using a scoped selector, so the shared product card is unchanged elsewhere. To undo it, remove `[&_[data-slot=product-card-image]]:aspect-5/4` from the two `gridClassName` strings.
+
+Known limits: the Expert Advice tab has no article-type filter or sort, and the tiles render inside the results section, so they appear when the products do.
 ## Customer accounts
 
 Sign-in uses Shopify Customer Accounts through a **Confidential** Customer Account API client on the Headless storefront (a Public client has no secret and will not work).
@@ -170,7 +204,7 @@ Values live in Vercel (Production and Preview) and `.env.local`, never in git. M
 
 - **Home:** fixed headline and description in the code, then the first eight products from the relevance-ranked `/collections/all` catalog. It is not a hand-picked list; point the grid at a Shopify collection to control it.
 - **Product pages:** variant choices are in the URL. Data is cached and refreshed by Shopify webhooks, so edits can lag until webhooks are registered. Bundles and complementary products show nothing until they exist in Shopify. The delivery estimate line renders under the price (see ZIP code and delivery estimate).
-- **Collections and search:** `/collections/[handle]` and `/search` have no toggles. Results are live, not cached. Collections and products must be published to the Headless channel. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`.
+- **Collections and search:** `/collections/[handle]` and `/search` have no toggles. Results are live, not cached. Collections and products must be published to the Headless channel. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`. Collection pages also have an Expert Advice tab, a sub-collection carousel, and a product count (see Collection page extras).
 - **Product card:** one shared tile for every grid, so a visual change affects every page. Assign an image to each color variant in Shopify so filtered cards show the matching color.
 - **Content pages:** Shopify Pages at `/pages/[handle]`, policies at `/policies/[handle]`, blogs at `/blogs/[blogHandle]`. Edit them in Shopify. The webhook handler does not refresh them, so edits can stay cached. There is no `/blogs` index; link to a specific blog. Unknown handles return a 404.
 - **Navigation:** the header has a single Shop link in code, plus search, cart, the ZIP button, and the account link. To manage menus in Shopify instead, use the `/vercel-shop:enable-shopify-menus` skill from a coding agent, then review the diff and test before pushing.
@@ -235,9 +269,11 @@ Done:
 - [x] Customer accounts: Shopify client, callback and logout URIs, env vars, and deployment
 - [x] Webhooks: product and collection webhooks registered in Shopify (JSON, API version 2026-07) to https://ecombio.com/api/webhooks/shopify; SHOPIFY_WEBHOOK_SECRET set in Production; unsigned requests return 401
 - [x] ZIP code modal with switch country view, and delivery estimate line under the product price (placeholder numbers)
+- [x] Collection pages: Products / Expert Advice tabs, sub-collection carousel, product count
 
 Remaining:
 
+- [ ] Collections: fill in Posts and Sub Collections on every collection that should show them, with Storefront API access ticked
 - [ ] Delivery estimate: replace the placeholder handling and delivery days with real numbers, or build the ZIP-based estimate
 - [ ] Country and language picker: connect it to Shopify Markets / i18n, or hide it until it does something
 - [ ] Sign-in test: `/account/login` redirects to Shopify with `redirect_uri=https://ecombio.com/account/authorize` (verified). Still to confirm in a browser: sign in with the emailed code, check profile, orders, addresses, and logout
