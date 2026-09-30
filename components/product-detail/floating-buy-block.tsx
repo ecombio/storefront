@@ -23,7 +23,7 @@ export function FloatingBuyBlock({ children }: { children: ReactNode }) {
       id="primary-buy-buttons"
       ref={ref}
       data-floating={floating}
-      className="sticky bottom-0 z-10 [clip-path:inset(-24px_0_0_0)] border-t border-transparent bg-background pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] data-[floating=true]:border-border/50 data-[floating=true]:shadow-[0_-8px_16px_-4px_rgb(0_0_0/0.12)]"
+      className="sticky bottom-0 z-10 -ml-2 pl-2 [clip-path:inset(-24px_0_0_0)] border-t border-transparent bg-background pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] data-[floating=true]:border-border/50 data-[floating=true]:shadow-[0_-8px_16px_-4px_rgb(0_0_0/0.12)]"
     >
       {children}
     </div>
