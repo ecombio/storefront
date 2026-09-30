@@ -1,5 +1,5 @@
 import { PredictiveSearchProvider } from "@shopify/hydrogen/react";
-import { LifeBuoy, ShieldCheck } from "lucide-react";
+import { CreditCard, LifeBuoy, Repeat, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -38,7 +38,11 @@ const UTILITY_LINKS = [
 ];
 
 // Tier 3, right side (highlighted links).
-const EXTRA_LINKS = [{ label: "Support", url: "/pages/contact", icon: LifeBuoy }];
+const EXTRA_LINKS = [
+  { label: "Pay over time", url: "/pages/financing", icon: CreditCard },
+  { label: "Trade in", url: "/pages/trade-in", icon: Repeat },
+  { label: "Support", url: "/pages/contact", icon: LifeBuoy },
+];
 
 async function getNavItems(): Promise<MenuItem[]> {
   try {
@@ -61,17 +65,19 @@ export async function Nav() {
       {/* Tier 1: utility bar (desktop only) */}
       <div className="hidden md:block">
         <Container className="flex h-8 items-center gap-6 text-xs font-medium">
-          {UTILITY_LINKS.map((link) => (
-            <Link
-              key={link.url}
-              href={link.url}
-              className="flex items-center gap-1.5 whitespace-nowrap hover:opacity-70 transition-opacity"
-            >
-              {link.icon && <link.icon className="size-3.5" aria-hidden="true" />}
-              {link.label}
-            </Link>
-          ))}
-          <div className="ml-auto flex items-center gap-4">
+          <ScrollFade className="min-w-0 flex-1" innerClassName="gap-6">
+            {UTILITY_LINKS.map((link) => (
+              <Link
+                key={link.url}
+                href={link.url}
+                className="flex items-center gap-1.5 whitespace-nowrap hover:opacity-70 transition-opacity"
+              >
+                {link.icon && <link.icon className="size-3.5" aria-hidden="true" />}
+                {link.label}
+              </Link>
+            ))}
+          </ScrollFade>
+          <div className="flex shrink-0 items-center gap-4">
             <ZipCode />
             <LocaleBar />
           </div>
@@ -117,6 +123,12 @@ export async function Nav() {
             className="hidden whitespace-nowrap lg:inline text-sm font-medium hover:opacity-70"
           >
             Need help?
+          </Link>
+          <Link
+            href="/pages/business"
+            className="hidden whitespace-nowrap lg:inline text-sm font-medium hover:opacity-70"
+          >
+            For business
           </Link>
           {shopConfig.auth.isEnabled && (
             <Suspense fallback={<NavAccountFallback />}>
