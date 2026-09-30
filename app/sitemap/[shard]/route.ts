@@ -46,7 +46,12 @@ async function renderShard(
   const entries = items
     .filter((item) => !isHiddenPageHandle(item.handle))
     .map((item) => {
-      const loc = escapeXml(toAbsoluteUrl(item.pathname ?? `/${segment}/${item.handle}`));
+      const loc = escapeXml(
+        toAbsoluteUrl(
+          item.pathname ??
+            (segment === "blogs" ? `/blogs/category/${item.handle}` : `/${segment}/${item.handle}`),
+        ),
+      );
       const lastmod = escapeXml(item.updatedAt);
       return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
     })
