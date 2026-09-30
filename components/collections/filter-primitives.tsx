@@ -1,8 +1,9 @@
 "use client";
 
 import { cn } from "cn";
-import { CheckIcon, LoaderCircleIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, LoaderCircleIcon, XIcon } from "lucide-react";
 import Link from "next/link";
+import { createContext, useContext, useState } from "react";
 import type { ComponentProps, MouseEventHandler, ReactNode } from "react";
 
 import { Input } from "@/components/ui/input";
@@ -124,11 +125,22 @@ function FilterBadge({
   );
 }
 
+const FilterSectionContext = createContext<{ open: boolean; toggle: () => void } | null>(null);
+
 function FilterSection({ className, children, ...props }: ComponentProps<"div">) {
+  const [open, setOpen] = useState(true);
+
   return (
-    <div data-slot="filter-section" className={cn("flex flex-col gap-2.5", className)} {...props}>
-      {children}
-    </div>
+    <FilterSectionContext value={{ open, toggle: () => setOpen((value) => !value) }}>
+      <div
+        data-slot="filter-section"
+        data-open={open}
+        className={cn("flex flex-col gap-2.5", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    </FilterSectionContext>
   );
 }
 
@@ -139,20 +151,48 @@ interface FilterSectionHeaderProps {
 }
 
 function FilterSectionHeader({ title, className, children }: FilterSectionHeaderProps) {
+  const context = useContext(FilterSectionContext);
+  const titleClassName = "text-base font-semibold text-muted-foreground";
+
   return (
     <div
       data-slot="filter-section-header"
       className={cn("flex items-center justify-between", className)}
     >
-      <span className="text-base font-semibold text-muted-foreground">{title}</span>
+      {context ? (
+        <button
+          type="button"
+          aria-expanded={context.open}
+          onClick={context.toggle}
+          className={cn(
+            "flex flex-1 cursor-pointer items-center justify-between gap-2 text-left",
+            titleClassName,
+          )}
+        >
+          <span>{title}</span>
+          <ChevronDownIcon
+            className={cn("size-4 shrink-0 transition-transform", !context.open && "-rotate-90")}
+          />
+        </button>
+      ) : (
+        <span className={titleClassName}>{title}</span>
+      )}
       {children}
     </div>
   );
 }
 
 function FilterSectionContent({ className, children, ...props }: ComponentProps<"div">) {
+  const context = useContext(FilterSectionContext);
+  const collapsed = context ? !context.open : false;
+
   return (
-    <div data-slot="filter-section-content" className={cn(className)} {...props}>
+    <div
+      data-slot="filter-section-content"
+      data-collapsed={collapsed}
+      className={cn(collapsed && "hidden", className)}
+      {...props}
+    >
       {children}
     </div>
   );
