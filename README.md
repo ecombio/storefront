@@ -130,11 +130,11 @@ Known limits:
 
 Collection pages (`/collections/[handle]`) have three additions on top of the template. Each is driven by Shopify data and hides itself when that data is empty.
 
-| Feature                   | What it does                                                                                        | Files                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Products / Expert Advice tabs | Tab bar under the title: `Products (N)` and `Expert Advice (N)`. The Advice tab shows article cards. | `components/collections/collection-tabs.tsx`, `article-grid.tsx`               |
-| Sub-collection carousel   | Row of image tiles above the product grid, in the results column. Scrolls and snaps, with arrows.   | `components/collections/sub-collection-tiles.tsx`                              |
-| Product count             | The number in the Products tab label.                                                               | `getCollectionProductCount` in `lib/collections/server.ts`                     |
+| Feature                       | What it does                                                                                         | Files                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Products / Expert Advice tabs | Tab bar under the title: `Products (N)` and `Expert Advice (N)`. The Advice tab shows article cards. | `components/collections/collection-tabs.tsx`, `article-grid.tsx` |
+| Sub-collection carousel       | Row of image tiles above the product grid, in the results column. Scrolls and snaps, with arrows.    | `components/collections/sub-collection-tiles.tsx`                |
+| Product count                 | The number in the Products tab label.                                                                | `getCollectionProductCount` in `lib/collections/server.ts`       |
 
 Data flow: the route (`app/collections/[handle]/page.tsx`) fetches articles, the product count, and sub-collections together and passes them to `CollectionDetailPage` (`components/collections/collection-page.tsx`). The Shopify queries live in `lib/shopify/operations/collections/server.ts`. The cached helpers are `getCollectionArticles` in `lib/blog/server.ts` and `getCollectionSubCollections` in `lib/collections/server.ts`.
 
@@ -142,11 +142,11 @@ Data flow: the route (`app/collections/[handle]/page.tsx`) fetches articles, the
 
 Define these under Settings, Custom data, Collection metafield definitions. **Tick Storefront API access on each definition**, or the storefront cannot read it and the feature stays hidden.
 
-| Metafield                | Type                  | Used for                                            |
-| ------------------------ | --------------------- | --------------------------------------------------- |
-| `custom.posts`           | List of blog posts    | Articles on the Expert Advice tab                   |
-| `custom.sub_collections` | List of collections   | Tiles in the carousel                               |
-| `custom.after_item_lists`| Page reference        | Content shown below the results (template feature)  |
+| Metafield                 | Type                | Used for                                           |
+| ------------------------- | ------------------- | -------------------------------------------------- |
+| `custom.posts`            | List of blog posts  | Articles on the Expert Advice tab                  |
+| `custom.sub_collections`  | List of collections | Tiles in the carousel                              |
+| `custom.after_item_lists` | Page reference      | Content shown below the results (template feature) |
 
 Fill the fields in on each collection in Shopify admin (open the collection, then the metafields section). A collection with no posts shows no tab bar. A collection with no sub-collections shows no carousel.
 
@@ -159,6 +159,7 @@ Fill the fields in on each collection in Shopify admin (open the collection, the
 - **Product image crop.** `components/collections/results-grid.tsx` crops product images to 5:4 on collection and all-products pages only, using a scoped selector, so the shared product card is unchanged elsewhere. To undo it, remove `[&_[data-slot=product-card-image]]:aspect-5/4` from the two `gridClassName` strings.
 
 Known limits: the Expert Advice tab has no article-type filter or sort, and the tiles render inside the results section, so they appear when the products do.
+
 ## Customer accounts
 
 Sign-in uses Shopify Customer Accounts through a **Confidential** Customer Account API client on the Headless storefront (a Public client has no secret and will not work).

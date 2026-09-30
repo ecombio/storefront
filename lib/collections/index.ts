@@ -5,7 +5,7 @@ import {
   serializeCollectionParams,
 } from "@shopify/hydrogen";
 
-export const PRODUCTS_PER_PAGE = 40;
+export const PRODUCTS_PER_PAGE = 48;
 
 export function getBrowseSort(
   state: Pick<CollectionState, "reverse" | "sortKey">,
