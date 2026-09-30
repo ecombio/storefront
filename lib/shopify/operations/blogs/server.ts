@@ -15,7 +15,7 @@ const GET_BLOG_QUERY = gql(
       ...BlogFields
       articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {
         nodes {
-          ...ArticleSummaryFields
+          ...ArticleSummaryFields authorProfile: metafield(namespace: "custom", key: "author_profile") { reference { ... on Metaobject { handle name: field(key: "name") { value } } } }
           tags
         }
       }
@@ -32,7 +32,7 @@ const GET_BLOG_ARTICLE_QUERY = gql(
       ...BlogFields
       articleByHandle(handle: $articleHandle) {
         ...ArticleSummaryFields
-        contentHtml
+        contentHtml authorProfile: metafield(namespace: "custom", key: "author_profile") { reference { ... on Metaobject { handle name: field(key: "name") { value } role: field(key: "role") { value } bio: field(key: "bio") { value } photo: field(key: "photo") { reference { ... on MediaImage { image { url altText width height } } } } } } }
         seo {
           description
           title
@@ -103,7 +103,7 @@ const GET_ARTICLE_BY_HANDLE_QUERY = gql(
         ...BlogFields
         articleByHandle(handle: $articleHandle) {
           ...ArticleSummaryFields
-          contentHtml
+          contentHtml authorProfile: metafield(namespace: "custom", key: "author_profile") { reference { ... on Metaobject { handle name: field(key: "name") { value } role: field(key: "role") { value } bio: field(key: "bio") { value } photo: field(key: "photo") { reference { ... on MediaImage { image { url altText width height } } } } } } }
           seo {
             description
             title

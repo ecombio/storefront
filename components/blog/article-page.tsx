@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ArticleBody } from "@/components/blog/article-body";
+import { AuthorCard } from "@/components/blog/author-card";
 import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
@@ -42,7 +43,17 @@ export function ArticlePage({ article }: ArticlePageProps) {
             </Link>
             <h1 className="text-3xl tracking-tight sm:text-4xl md:text-5xl">{article.title}</h1>
             <div className="flex flex-wrap justify-center gap-x-2 text-muted-foreground text-sm">
-              {article.author && <span>{article.author}</span>}
+              {article.author &&
+                (article.authorProfile?.handle ? (
+                  <Link
+                    className="hover:text-foreground hover:underline"
+                    href={`/blogs/author/${article.authorProfile.handle}`}
+                  >
+                    {article.authorProfile.name}
+                  </Link>
+                ) : (
+                  <span>{article.author}</span>
+                ))}
               {article.author && <span aria-hidden>·</span>}
               <time dateTime={article.publishedAt}>{publishedAt}</time>
             </div>
@@ -60,7 +71,10 @@ export function ArticlePage({ article }: ArticlePageProps) {
             </div>
           )}
           <div className="grid gap-12 lg:grid-cols-[minmax(0,42rem)_16rem] lg:justify-center">
-            <ArticleBody segments={segments} />
+            <div className="grid content-start gap-12">
+              <ArticleBody segments={segments} />
+              {article.authorProfile && <AuthorCard profile={article.authorProfile} />}
+            </div>
             {contents.length > 1 && (
               <aside className="hidden lg:block">
                 <nav aria-label="Contents" className="sticky top-24 grid gap-4">

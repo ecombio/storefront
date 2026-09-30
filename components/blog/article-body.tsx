@@ -32,12 +32,7 @@ function AccordionList({ id, items }: { id: string; items: AccordionSegment[] })
   return (
     <div className="border-t">
       {items.map((item, index) => (
-        <details
-          className="group border-b"
-          key={`${id}-${index}`}
-          // `name` makes the list exclusive: opening one closes the others.
-          {...{ name: id }}
-        >
+        <details className="group border-b" key={`${id}-${index}`}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 font-medium text-base [&::-webkit-details-marker]:hidden">
             {item.title}
             <span aria-hidden className="relative size-3 shrink-0">

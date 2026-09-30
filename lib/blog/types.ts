@@ -8,8 +8,17 @@ export interface Blog {
   title: string;
 }
 
+export interface AuthorProfile {
+  bio?: string | undefined;
+  handle?: string | undefined;
+  name: string;
+  photo?: Image | undefined;
+  role?: string | undefined;
+}
+
 export interface BlogArticle {
   author?: string;
+  authorProfile?: AuthorProfile | undefined;
   blogHandle: string;
   blogTitle: string;
   body?: string;
