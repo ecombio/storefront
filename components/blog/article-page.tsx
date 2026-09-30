@@ -1,10 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { ArticleBody } from "@/components/blog/article-body";
 import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
-import { Prose } from "@/components/ui/prose";
 import { Sections } from "@/components/ui/sections";
+import {
+  addHeadingIds,
+  parseBody,
+  type BodyHeading,
+  type BodySegment,
+} from "@/lib/blog/shortcodes";
 import type { BlogArticle } from "@/lib/blog/types";
 import { shopConfig } from "@/lib/config";
 
@@ -16,9 +22,16 @@ export function ArticlePage({ article }: ArticlePageProps) {
   const publishedAt = new Intl.DateTimeFormat(shopConfig.localization.locale, {
     dateStyle: "long",
   }).format(new Date(article.publishedAt));
+
+  const headings: BodyHeading[] = [];
+  const segments: BodySegment[] = parseBody(article.body ?? "").map((segment) =>
+    segment.type === "html" ? { ...segment, html: addHeadingIds(segment.html, headings) } : segment,
+  );
+  const contents = headings.filter((heading) => heading.level === 2);
+
   return (
     <Page>
-      <Container className="max-w-4xl">
+      <Container className="max-w-5xl">
         <Sections className="gap-5">
           <header className="grid gap-4 text-center">
             <Link
@@ -41,17 +54,33 @@ export function ArticlePage({ article }: ArticlePageProps) {
                 className="object-cover"
                 fill
                 priority
-                sizes="(max-width: 896px) 100vw, 896px"
+                sizes="(max-width: 1024px) 100vw, 1024px"
                 src={article.image.url}
               />
             </div>
           )}
-          <Prose className="mx-auto w-full max-w-2xl">
-            <div
-              // oxlint-disable-next-line react/no-danger -- Shopify sanitizes article HTML.
-              dangerouslySetInnerHTML={{ __html: article.body ?? "" }}
-            />
-          </Prose>
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,42rem)_16rem] lg:justify-center">
+            <ArticleBody segments={segments} />
+            {contents.length > 1 && (
+              <aside className="hidden lg:block">
+                <nav aria-label="Contents" className="sticky top-24 grid gap-4">
+                  <h2 className="text-xs uppercase tracking-wide">Contents</h2>
+                  <ol className="grid gap-3">
+                    {contents.map((heading) => (
+                      <li key={heading.id}>
+                        <a
+                          className="font-medium text-sm uppercase hover:underline"
+                          href={`#${heading.id}`}
+                        >
+                          {heading.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+              </aside>
+            )}
+          </div>
         </Sections>
       </Container>
     </Page>
