@@ -1,3 +1,4 @@
+// Keep @yotpo/yotpo.md in sync with changes to this route.
 // Path: app/api/yotpo/reviews/route.ts
 //
 // Receives the review form, validates it, and forwards it to Yotpo's create-review endpoint.

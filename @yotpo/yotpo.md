@@ -40,41 +40,41 @@ Last reviewed: Sep 30, 2026, at commit `384c3fc`. Reviewed: every file in `@yotp
 5. `submitReview` posts to `https://api.yotpo.com/v1/widget/reviews`.
 6. The form shows "Thanks... it will appear once it has been approved."
 
-| Route response | Meaning                                                      |
-| -------------- | ------------------------------------------------------------ |
-| 200 `ok`       | Sent to Yotpo, or a bot filled the honeypot (faked success). |
-| 400            | Validation failed. The message says which field.             |
-| 404            | Product handle not found.                                    |
-| 413            | Declared body over 8 KB.                                     |
-| 429            | Over 5 submissions per 10 minutes from one IP (per instance). |
+| Route response | Meaning                                                         |
+| -------------- | --------------------------------------------------------------- |
+| 200 `ok`       | Sent to Yotpo, or a bot filled the honeypot (faked success).    |
+| 400            | Validation failed. The message says which field.                |
+| 404            | Product handle not found.                                       |
+| 413            | Declared body over 8 KB.                                        |
+| 429            | Over 5 submissions per 10 minutes from one IP (per instance).   |
 | 502            | Yotpo rejected it, or something threw. Details are in the logs. |
 
 ## 4. Files
 
-| File                                    | What it does                                                                                              |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `@yotpo/config.ts`                      | App key, shop domain, API URLs, sizes (50 fetched, 5 shown), cache time (3600 s), brand colors.           |
-| `@yotpo/client.ts`                      | Server-only. `getProductReviews`, `getProductRatingSummary`, `submitReview`. Normalizes Yotpo's response. |
-| `@yotpo/types.ts`                       | `YotpoReview`, `YotpoBottomline`, `YotpoProductReviews`, `YotpoRatingSummary`.                            |
-| `@yotpo/index.ts`                       | The public surface: `StarRating`, `ProductReviews`, `submitReview`, and the types.                        |
-| `@yotpo/components/star.tsx`            | `Star` (one) and `StarRow` (five, rounded to whole stars).                                                |
-| `@yotpo/components/star-ratings.tsx`    | `StarRating` badge: stars, score, count, links to `#reviews`. Shows "Write a review" if there are none.   |
-| `@yotpo/components/reviews-widget.tsx`  | `ProductReviews` server section, plus the empty state.                                                    |
-| `@yotpo/components/reviews-browser.tsx` | Summary, clickable rating bars, search, rating filter, sort, review cards, "Show more".                   |
-| `@yotpo/components/review-form.tsx`     | `WriteReviewButton`: star picker, fields, honeypot, posts to the route.                                   |
-| `app/api/yotpo/reviews/route.ts`        | Validates and forwards new reviews. Outside `@yotpo/`.                                                    |
-| `components/product-detail/product-detail-section.tsx` | Places the badge and the reviews section on the product page. Outside `@yotpo/`.          |
-| `tsconfig.json`                         | Path aliases `@yotpo` and `@yotpo/*`.                                                                     |
+| File                                                   | What it does                                                                                              |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `@yotpo/config.ts`                                     | App key, shop domain, API URLs, sizes (50 fetched, 5 shown), cache time (3600 s), brand colors.           |
+| `@yotpo/client.ts`                                     | Server-only. `getProductReviews`, `getProductRatingSummary`, `submitReview`. Normalizes Yotpo's response. |
+| `@yotpo/types.ts`                                      | `YotpoReview`, `YotpoBottomline`, `YotpoProductReviews`, `YotpoRatingSummary`.                            |
+| `@yotpo/index.ts`                                      | The public surface: `StarRating`, `ProductReviews`, `submitReview`, and the types.                        |
+| `@yotpo/components/star.tsx`                           | `Star` (one) and `StarRow` (five, rounded to whole stars).                                                |
+| `@yotpo/components/star-ratings.tsx`                   | `StarRating` badge: stars, score, count, links to `#reviews`. Shows "Write a review" if there are none.   |
+| `@yotpo/components/reviews-widget.tsx`                 | `ProductReviews` server section, plus the empty state.                                                    |
+| `@yotpo/components/reviews-browser.tsx`                | Summary, clickable rating bars, search, rating filter, sort, review cards, "Show more".                   |
+| `@yotpo/components/review-form.tsx`                    | `WriteReviewButton`: star picker, fields, honeypot, posts to the route.                                   |
+| `app/api/yotpo/reviews/route.ts`                       | Validates and forwards new reviews. Outside `@yotpo/`.                                                    |
+| `components/product-detail/product-detail-section.tsx` | Places the badge and the reviews section on the product page. Outside `@yotpo/`.                          |
+| `tsconfig.json`                                        | Path aliases `@yotpo` and `@yotpo/*`.                                                                     |
 
 `types.ts.bak` is a local backup, ignored by git (`*.bak*`). Never commit it.
 
 ## 5. Configuration
 
-| Variable                           | Read in                           | Purpose                                                                                      |
-| ---------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_YOTPO_APP_KEY`        | `@yotpo/config.ts`                | Yotpo app key. A public identifier, not a secret. Missing means no review UI.                |
-| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` | `@yotpo/config.ts`                | Already required by the storefront. Sent to Yotpo as `domain`. Must match what Yotpo knows.  |
-| `NEXT_PUBLIC_SITE_URL`             | `app/api/yotpo/reviews/route.ts`  | Optional. Origin used to build the product link sent to Yotpo. Falls back to the request origin. |
+| Variable                           | Read in                          | Purpose                                                                                          |
+| ---------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_YOTPO_APP_KEY`        | `@yotpo/config.ts`               | Yotpo app key. A public identifier, not a secret. Missing means no review UI.                    |
+| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` | `@yotpo/config.ts`               | Already required by the storefront. Sent to Yotpo as `domain`. Must match what Yotpo knows.      |
+| `NEXT_PUBLIC_SITE_URL`             | `app/api/yotpo/reviews/route.ts` | Optional. Origin used to build the product link sent to Yotpo. Falls back to the request origin. |
 
 Status of these variables:
 
@@ -111,6 +111,7 @@ git grep -n "process.env" -- '@yotpo' 'app/api/yotpo'
 8. **Don't confuse with Expert Reviews.** `ExpertReviewsSection` in the Description tab is a separate feature, not Yotpo. **(verify what feeds it)**
 9. **Pushes to `main` deploy to production.** Docs-only pushes are safe; anything in `@yotpo/` should go through the README's push block (format, lint, build).
 10. **`@yotpo/index.ts` is a barrel on purpose.** `AGENTS.md` says no barrel files, but `@yotpo` and `@yotpo/*` are path aliases in `tsconfig.json` and the app imports only from `@yotpo`. Do not delete it or rewrite those imports unless that is the task.
+11. **Markdown is linted.** `pnpm lint` runs `oxfmt --check`, which also checks `yotpo.md`. After editing this file, run `pnpm oxfmt`, or lint (and the README push block) stops.
 
 ## 8. Known limits
 
@@ -126,18 +127,18 @@ git grep -n "process.env" -- '@yotpo' 'app/api/yotpo'
 
 ## 9. Where to change things
 
-| I want to...                               | Edit                                                                   |
-| ------------------------------------------ | ---------------------------------------------------------------------- |
+| I want to...                               | Edit                                                                     |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
 | Fetch or show more reviews, change caching | `config.ts` (`reviewsFetchLimit`, `reviewsPerPage`, `revalidateSeconds`) |
-| Change the star color                      | `config.ts` (`brand.starsColor`)                                       |
-| Change the badge layout                    | `components/star-ratings.tsx`                                          |
-| Move the badge or the reviews section      | `components/product-detail/product-detail-section.tsx`                 |
-| Add a sort option                          | `SORT_LABELS` and the `switch` in `reviews-browser.tsx`                |
-| Change form fields or limits               | `review-form.tsx` **and** `route.ts`                                   |
-| Change rate limit numbers                  | `route.ts` (`WINDOW_MS`, `MAX_PER_WINDOW`)                             |
-| Change what is sent to Yotpo               | `client.ts` (`submitReview`)                                           |
-| Handle new fields from Yotpo               | `types.ts` and the normalizing block in `fetchProductReviews`          |
-| Refresh reviews sooner                     | Revalidate the cache tag `yotpo-reviews-<productId>`                   |
+| Change the star color                      | `config.ts` (`brand.starsColor`)                                         |
+| Change the badge layout                    | `components/star-ratings.tsx`                                            |
+| Move the badge or the reviews section      | `components/product-detail/product-detail-section.tsx`                   |
+| Add a sort option                          | `SORT_LABELS` and the `switch` in `reviews-browser.tsx`                  |
+| Change form fields or limits               | `review-form.tsx` **and** `route.ts`                                     |
+| Change rate limit numbers                  | `route.ts` (`WINDOW_MS`, `MAX_PER_WINDOW`)                               |
+| Change what is sent to Yotpo               | `client.ts` (`submitReview`)                                             |
+| Handle new fields from Yotpo               | `types.ts` and the normalizing block in `fetchProductReviews`            |
+| Refresh reviews sooner                     | Revalidate the cache tag `yotpo-reviews-<productId>`                     |
 
 ## 10. How to test
 
@@ -151,18 +152,18 @@ git grep -n "process.env" -- '@yotpo' 'app/api/yotpo'
 
 24 tasks, all created as To Do on Sep 30, 2026. Only YOTPO-7 has a priority (Highest).
 
-| Task                               | State in code                                                                 |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| YOTPO-7 Star Ratings               | Built (`StarRating`). Verify on the live site, then move to Done.             |
-| YOTPO-8 Reviews Sorting            | Built, four options, browser-side. Verify, then Done.                         |
-| YOTPO-16 Custom views & filters    | Partial: search, rating filter, rating bars. No saved or alternate views.     |
-| YOTPO-9 Reviews Tab                | Reviews are a section, not a tab. Decide what the task means.                 |
-| YOTPO-10 Reviews Moderation        | Handled by Yotpo (new reviews wait for approval). No moderation UI here.      |
-| YOTPO-17 Media front-and-center    | Not started. Types have no media fields.                                      |
-| YOTPO-22 Reviewer Badges           | Not started.                                                                  |
-| YOTPO-13 Review Comments           | Not started.                                                                  |
-| YOTPO-18 SEO Page                  | Not started. No review schema markup.                                         |
-| All the others                     | Not started in this folder. Some look like Yotpo plan extras (Live Chat Support, Email Analytics Dashboard, Kick-start Credits) and may become "not building". **(verify)** |
+| Task                            | State in code                                                                                                                                                               |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| YOTPO-7 Star Ratings            | Built (`StarRating`). Verify on the live site, then move to Done.                                                                                                           |
+| YOTPO-8 Reviews Sorting         | Built, four options, browser-side. Verify, then Done.                                                                                                                       |
+| YOTPO-16 Custom views & filters | Partial: search, rating filter, rating bars. No saved or alternate views.                                                                                                   |
+| YOTPO-9 Reviews Tab             | Reviews are a section, not a tab. Decide what the task means.                                                                                                               |
+| YOTPO-10 Reviews Moderation     | Handled by Yotpo (new reviews wait for approval). No moderation UI here.                                                                                                    |
+| YOTPO-17 Media front-and-center | Not started. Types have no media fields.                                                                                                                                    |
+| YOTPO-22 Reviewer Badges        | Not started.                                                                                                                                                                |
+| YOTPO-13 Review Comments        | Not started.                                                                                                                                                                |
+| YOTPO-18 SEO Page               | Not started. No review schema markup.                                                                                                                                       |
+| All the others                  | Not started in this folder. Some look like Yotpo plan extras (Live Chat Support, Email Analytics Dashboard, Kick-start Credits) and may become "not building". **(verify)** |
 
 Groups: displaying (7, 9, 8, 16, 17, 22, 18, 23, 24, 15), collecting (2, 3, 5, 1, 4), managing (10, 11, 12, 14, 13), reporting and support (19, 20, 21).
 
@@ -222,19 +223,19 @@ If none of these apply, do not edit this file.
 
 ### Which section to update
 
-| If you changed...                                     | Update these sections                                  |
-| ----------------------------------------------------- | ------------------------------------------------------ |
-| Any file, added, renamed, deleted, or its job changed | 4 (Files), and 3 (request path) if the flow changed    |
-| How reviews are fetched, cached, or normalized        | 3, 6 (Behavior), 8 (Known limits)                      |
-| Form fields, validation, limits, or the route         | 3 (response codes), 6, 7 (gotcha 4), 9                 |
-| Rate limiting or spam protection                      | 6, 8, 12 (Open items)                                  |
-| Any `process.env` read                                | 5 (Configuration), 12, and the three places below      |
-| Where or how the badge or section appears on the page | 3, 4, 9                                                |
-| Something that fixes a limitation                     | Remove it from 8, note it in 6 if it changes behavior  |
-| Something that adds a limitation or a workaround      | Add it to 8 or 7                                       |
-| A Jira task finished, dropped, or redefined           | 11 (Jira), 12                                          |
-| A to-do in section 12 was done                        | Tick it or delete it. Add new to-dos you create.       |
-| A new term that a newcomer would not know             | 13 (Glossary)                                          |
+| If you changed...                                     | Update these sections                                 |
+| ----------------------------------------------------- | ----------------------------------------------------- |
+| Any file, added, renamed, deleted, or its job changed | 4 (Files), and 3 (request path) if the flow changed   |
+| How reviews are fetched, cached, or normalized        | 3, 6 (Behavior), 8 (Known limits)                     |
+| Form fields, validation, limits, or the route         | 3 (response codes), 6, 7 (gotcha 4), 9                |
+| Rate limiting or spam protection                      | 6, 8, 12 (Open items)                                 |
+| Any `process.env` read                                | 5 (Configuration), 12, and the three places below     |
+| Where or how the badge or section appears on the page | 3, 4, 9                                               |
+| Something that fixes a limitation                     | Remove it from 8, note it in 6 if it changes behavior |
+| Something that adds a limitation or a workaround      | Add it to 8 or 7                                      |
+| A Jira task finished, dropped, or redefined           | 11 (Jira), 12                                         |
+| A to-do in section 12 was done                        | Tick it or delete it. Add new to-dos you create.      |
+| A new term that a newcomer would not know             | 13 (Glossary)                                         |
 
 ### Environment variables: keep three places in sync
 
@@ -279,18 +280,19 @@ Never write real keys, tokens, or secrets into this file, `.env.example`, or the
 - [ ] Are the Known limits (section 8) and Open items (section 12) still true?
 - [ ] Are there new **(verify)** markers, and did I mention them in my reply?
 - [ ] Are the code and this file in the same commit?
+- [ ] Did I run `pnpm oxfmt` after editing this file? (`pnpm lint` fails on unformatted Markdown.)
 
 ### How these rules reach each tool
 
 This section is the single source of truth. Everything else only points here, so the rules cannot drift apart.
 
-| Where                                                                  | Reaches                                                                 |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| This file, section 15                                                  | The canonical rules.                                                    |
-| `AGENTS.md` (the Yotpo block)                                          | Coding agents that read `AGENTS.md`.                                    |
-| One-line comments at the top of `@yotpo/index.ts` and `app/api/yotpo/reviews/route.ts` | Any model that opens those files, in any tool.          |
-| The prompt below                                                       | Chat tools that cannot see the repo.                                    |
-| Optional one-line pointer files (for example `CLAUDE.md` containing `@AGENTS.md`) | Tools that read their own instruction file. Add only for tools you use. |
+| Where                                                                                  | Reaches                                                                 |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| This file, section 15                                                                  | The canonical rules.                                                    |
+| `AGENTS.md` (the Yotpo block)                                                          | Coding agents that read `AGENTS.md`.                                    |
+| One-line comments at the top of `@yotpo/index.ts` and `app/api/yotpo/reviews/route.ts` | Any model that opens those files, in any tool.                          |
+| The prompt below                                                                       | Chat tools that cannot see the repo.                                    |
+| Optional one-line pointer files (for example `CLAUDE.md` containing `@AGENTS.md`)      | Tools that read their own instruction file. Add only for tools you use. |
 
 ### Prompt to paste into any AI chat
 

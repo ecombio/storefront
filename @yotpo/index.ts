@@ -1,3 +1,4 @@
+// Keep @yotpo/yotpo.md in sync with changes in this folder.
 // Path: @yotpo/index.ts
 //
 // Public surface of the Yotpo slice. Everything else in this folder is an implementation
