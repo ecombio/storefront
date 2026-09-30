@@ -274,3 +274,11 @@ Don't write:
 Keep `// eslint-disable-*`, `// @ts-expect-error`, `// biome-ignore`, and other tooling directives — those are not prose comments.
 
 <!-- END:vercel-shop-style -->
+
+<!-- BEGIN:ecombio-yotpo -->
+
+## Yotpo reviews (Ecombio)
+
+Before changing anything Yotpo-related (`@yotpo/**`, `app/api/yotpo/reviews`, the Yotpo parts of the product page, Yotpo env vars), read `@yotpo/yotpo.md`. After the change, update it in the same commit, following its section 15. Exception to the code style above: `@yotpo/index.ts` is a barrel on purpose.
+
+<!-- END:ecombio-yotpo -->
