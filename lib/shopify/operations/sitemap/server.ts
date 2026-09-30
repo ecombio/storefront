@@ -84,7 +84,7 @@ export async function fetchSitemapPage(
         articlePage?.nodes.map((article) => ({
           blogHandle: article.blog.handle,
           handle: article.handle,
-          pathname: `/blogs/${article.blog.handle}/${article.handle}`,
+          pathname: `/blogs/articles/${article.handle}`,
           updatedAt: article.publishedAt,
         })) ?? [],
     };

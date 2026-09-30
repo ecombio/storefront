@@ -34,7 +34,7 @@ const FALLBACK_ITEMS: MenuItem[] = [
 const UTILITY_LINKS = [
   { label: "The Ecombio Promise", url: "/pages/contact", icon: ShieldCheck },
   { label: "Shipping & returns", url: "/policies/contact-information", icon: null },
-  { label: "Journal", url: "/blogs/ecombio", icon: null },
+  { label: "Journal", url: "/blogs/category/ecombio", icon: null },
 ];
 
 // Tier 3, right side (highlighted links).
