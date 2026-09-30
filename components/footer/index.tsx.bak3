@@ -10,7 +10,6 @@ import { getShopPolicies } from "@/lib/policies/server";
 import type { MenuItem } from "@/lib/shopify/transforms/menu/types";
 
 import { Newsletter } from "./newsletter";
-import { PaymentIcons } from "./payment-icons";
 import { SocialLinks } from "./social-links";
 import type { SocialLink } from "./social-links";
 
@@ -24,13 +23,7 @@ async function getFooterItems(): Promise<MenuItem[]> {
 }
 
 export async function Footer() {
-  const socialLinks: SocialLink[] = [
-    // TODO: replace these placeholder URLs with the real Ecombio accounts
-    { platform: "instagram", url: "https://www.instagram.com/" },
-    { platform: "tiktok", url: "https://www.tiktok.com/" },
-    { platform: "youtube", url: "https://www.youtube.com/" },
-    { platform: "linkedin", url: "https://www.linkedin.com/" },
-  ];
+  const socialLinks: SocialLink[] = [];
   const items = await getFooterItems();
   const policies = await getShopPolicies({}).catch(() => []);
   const privacy = policies.find((policy) => policy.handle.includes("privacy"));
@@ -41,8 +34,8 @@ export async function Footer() {
       <Container className={cn("pt-20 pb-10", shopConfig.agent.isEnabled && "pb-22")}>
         <Sections className="gap-10">
           <Newsletter privacyHref={privacyHref} />
-          {items.length > 0 && <FooterMenu items={items} socialLinks={socialLinks} />}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-5 border-t border-border pt-8">
+          {items.length > 0 && <FooterMenu items={items} />}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:justify-start">
               <p className="text-sm text-muted-foreground leading-5">
                 {`© ${shopConfig.site.name}. All rights reserved.`}
@@ -57,6 +50,7 @@ export async function Footer() {
                 </Link>
               ))}
             </div>
+            {socialLinks.length > 0 && <SocialLinks links={socialLinks} />}
           </div>
         </Sections>
       </Container>
@@ -85,23 +79,22 @@ function MenuLink({ url, children, className }: MenuLinkProps) {
   );
 }
 
-function FooterMenu({ items, socialLinks }: { items: MenuItem[]; socialLinks: SocialLink[] }) {
+function FooterMenu({ items }: { items: MenuItem[] }) {
   const columns = items.slice(0, 5);
-  const paymentsIndex = Math.min(2, columns.length - 1);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10">
-      {columns.map((column, index) => (
+      {columns.map((column) => (
         <div key={column.id} className="space-y-3">
           {column.url ? (
             <MenuLink
               url={column.url}
-              className="block text-base font-semibold hover:opacity-70 transition-opacity"
+              className="block text-sm font-semibold hover:opacity-70 transition-opacity"
             >
               {column.title}
             </MenuLink>
           ) : (
-            <h3 className="text-base font-semibold">{column.title}</h3>
+            <h3 className="text-sm font-semibold">{column.title}</h3>
           )}
           {column.items.length > 0 && (
             <ul className="space-y-2">
@@ -109,7 +102,7 @@ function FooterMenu({ items, socialLinks }: { items: MenuItem[]; socialLinks: So
                 <li key={leaf.id}>
                   <MenuLink
                     url={leaf.url}
-                    className="block text-sm text-foreground hover:opacity-70 transition-opacity"
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {leaf.title}
                   </MenuLink>
@@ -117,8 +110,6 @@ function FooterMenu({ items, socialLinks }: { items: MenuItem[]; socialLinks: So
               ))}
             </ul>
           )}
-          {index === 0 && socialLinks.length > 0 && <SocialLinks links={socialLinks} />}
-          {index === paymentsIndex && <PaymentIcons />}
         </div>
       ))}
     </div>

@@ -42,7 +42,7 @@ export async function Footer() {
         <Sections className="gap-10">
           <Newsletter privacyHref={privacyHref} />
           {items.length > 0 && <FooterMenu items={items} socialLinks={socialLinks} />}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-5 border-t border-border pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:justify-start">
               <p className="text-sm text-muted-foreground leading-5">
                 {`© ${shopConfig.site.name}. All rights reserved.`}
@@ -85,7 +85,13 @@ function MenuLink({ url, children, className }: MenuLinkProps) {
   );
 }
 
-function FooterMenu({ items, socialLinks }: { items: MenuItem[]; socialLinks: SocialLink[] }) {
+function FooterMenu({
+  items,
+  socialLinks,
+}: {
+  items: MenuItem[];
+  socialLinks: SocialLink[];
+}) {
   const columns = items.slice(0, 5);
   const paymentsIndex = Math.min(2, columns.length - 1);
 
