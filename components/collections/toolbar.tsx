@@ -7,17 +7,24 @@ import type { Filter, PriceRange } from "@/lib/filters/types";
 
 import { CollectionActiveFilterCountBadge } from "./collection-browse-provider";
 import { FilterPendingScope } from "./filter-pending-context";
+import { FilterSidebarToggle, ViewToggle } from "./filter-sidebar-layout";
 import { FilterSidebarSheet } from "./filter-sidebar-sheet";
 import { CollectionFilters } from "./filters";
 import { CollectionsSortSelect } from "./sort-select";
 
 interface BrowseToolbarProps {
   facetsPromise: Promise<{ filters: Filter[]; priceRange?: PriceRange }>;
+  hideFilterTriggerOnDesktop?: boolean;
   resultCount?: ReactNode;
   sortExclude?: string[];
 }
 
-export function BrowseToolbar({ facetsPromise, resultCount, sortExclude }: BrowseToolbarProps) {
+export function BrowseToolbar({
+  facetsPromise,
+  hideFilterTriggerOnDesktop,
+  resultCount,
+  sortExclude,
+}: BrowseToolbarProps) {
   return (
     <ToolbarLayout
       filterSheet={
@@ -39,6 +46,7 @@ export function BrowseToolbar({ facetsPromise, resultCount, sortExclude }: Brows
           </FilterPendingScope>
         </FilterSidebarSheet>
       }
+      hideFilterSheetOnDesktop={hideFilterTriggerOnDesktop}
       resultCount={resultCount}
       sortSelect={<CollectionsSortSelect exclude={sortExclude} />}
     />
@@ -80,14 +88,21 @@ export function BrowseFallback({ resultCount }: BrowseFallbackProps) {
 
 interface ToolbarLayoutProps {
   filterSheet: ReactNode;
+  hideFilterSheetOnDesktop?: boolean;
   resultCount?: ReactNode;
   sortSelect: ReactNode;
 }
 
-function ToolbarLayout({ filterSheet, resultCount, sortSelect }: ToolbarLayoutProps) {
+function ToolbarLayout({
+  filterSheet,
+  hideFilterSheetOnDesktop,
+  resultCount,
+  sortSelect,
+}: ToolbarLayoutProps) {
   return (
     <div className="flex items-center gap-5">
-      {filterSheet}
+      <div className={hideFilterSheetOnDesktop ? "lg:hidden" : undefined}>{filterSheet}</div>
+      {hideFilterSheetOnDesktop ? <FilterSidebarToggle /> : null}
       <div className="ml-auto flex items-center gap-5">
         {resultCount !== undefined && (
           <div className="hidden items-center text-sm text-muted-foreground sm:flex">
@@ -95,6 +110,7 @@ function ToolbarLayout({ filterSheet, resultCount, sortSelect }: ToolbarLayoutPr
           </div>
         )}
         {sortSelect}
+        {hideFilterSheetOnDesktop ? <ViewToggle /> : null}
       </div>
     </div>
   );

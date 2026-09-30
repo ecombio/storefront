@@ -9,6 +9,22 @@ import { getBrowseSearch } from "@/lib/collections";
 import type { PageInfo } from "@/lib/pagination/types";
 import type { ProductCard as ProductCardType } from "@/lib/product/types";
 
+import { useBrowseView } from "./filter-sidebar-layout";
+
+// List view restyles the existing cards with CSS: image on the left, details on the right.
+const LIST_VIEW_CLASSES = [
+  "grid grid-cols-1 gap-5",
+  "[&>a]:border-b [&>a]:pb-5",
+  "[&_[data-slot=product-card-image-container]]:flex-row",
+  "[&_[data-slot=product-card-image-container]]:items-center",
+  "[&_[data-slot=product-card-image-container]]:gap-5",
+  "[&_[data-slot=product-card-image]]:w-36",
+  "[&_[data-slot=product-card-image]]:shrink-0",
+  "sm:[&_[data-slot=product-card-image]]:w-56",
+  "[&_[data-slot=product-card-title]]:line-clamp-2",
+  "[&_[data-slot=product-card-title]]:text-base",
+].join(" ");
+
 interface InfiniteProductGridProps<TParams> {
   initialProducts: ProductCardType[];
   initialPageInfo: PageInfo;
@@ -18,7 +34,7 @@ interface InfiniteProductGridProps<TParams> {
     params: TParams & { cursor: string; search: string },
   ) => Promise<{ products: ProductCardType[]; pageInfo: PageInfo }>;
   loadMoreParams: TParams;
-  after?: ReactNode;
+  gridClassName?: string;
   children: ReactNode;
 }
 
@@ -28,11 +44,12 @@ export function InfiniteProductGrid<TParams>({
   outOfStockText,
   loadMore,
   loadMoreParams,
+  gridClassName,
   children,
-  after,
 }: InfiniteProductGridProps<TParams>) {
   // The store, not a server snapshot, is the single source of truth for filters and sort mid-scroll.
   const search = useCollection(getBrowseSearch);
+  const view = useBrowseView();
   const [additionalProducts, setAdditionalProducts] = useState<ProductCardType[]>([]);
   const [pageInfo, setPageInfo] = useState<PageInfo>(initialPageInfo);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,9 +90,14 @@ export function InfiniteProductGrid<TParams>({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [endCursor, hasNextPage]);
+  const gridClasses =
+    view === "list"
+      ? LIST_VIEW_CLASSES
+      : `grid grid-cols-2 gap-5 ${gridClassName ?? "sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`;
+
   return (
     <>
-      <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className={gridClasses}>
         {children}
         {additionalProducts.map((product) => (
           <ProductCard key={product.id} product={product} outOfStockText={outOfStockText} />
@@ -87,7 +109,6 @@ export function InfiniteProductGrid<TParams>({
           {isLoading && <LoaderCircleIcon className="size-6 animate-spin text-muted-foreground" />}
         </div>
       )}
-      {after}
     </>
   );
 }

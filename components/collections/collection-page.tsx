@@ -3,12 +3,14 @@ import { Suspense } from "react";
 
 import { CollectionViewedTracker } from "@/components/analytics/trackers";
 import { CollectionResultsGrid } from "@/components/collections/results-grid";
-import { BrowseFallback, BrowseToolbar } from "@/components/collections/toolbar";
+import { BrowseToolbar } from "@/components/collections/toolbar";
+import { ProductsGridSkeleton } from "@/components/product/products-grid";
 import { BreadcrumbSchema } from "@/components/schema/breadcrumb-schema";
 import { CollectionSchema } from "@/components/schema/collection-schema";
 import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
+import { PRODUCTS_PER_PAGE } from "@/lib/collections";
 import type {
   CollectionAfterItemPage,
   CollectionResultsData,
@@ -16,24 +18,41 @@ import type {
   Collection,
 } from "@/lib/collections/types";
 
+import { AfterItemList } from "./after-item-list";
 import { CollectionBrowseProvider } from "./collection-browse-provider";
 import { FilterPendingScope } from "./filter-pending-context";
+import { FilterSidebarLayout } from "./filter-sidebar-layout";
+import { CollectionFilters } from "./filters";
+
+const BROWSE_LAYOUT = "lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10";
+const GRID_COLUMNS = "sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3";
+
+async function AfterItems({
+  pagePromise,
+}: {
+  pagePromise: Promise<CollectionAfterItemPage | undefined>;
+}) {
+  const page = await pagePromise;
+  return page ? <AfterItemList page={page} /> : null;
+}
 
 export function CollectionDetailPage({
-  collection,
   afterItemPagePromise,
+  collection,
   collectionResultsDataPromise,
   handle,
   searchStatePromise,
   sortExclude,
 }: {
-  collection: Collection;
   afterItemPagePromise?: Promise<CollectionAfterItemPage | undefined>;
+  collection: Collection;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
   handle: string;
   searchStatePromise: Promise<CollectionSearchState>;
   sortExclude?: string[];
 }) {
+  const facetsPromise = collectionResultsDataPromise.then((data) => data.transformedFilters);
+
   return (
     <>
       {collection.id ? (
@@ -44,23 +63,43 @@ export function CollectionDetailPage({
           <Sections className="gap-5">
             <CollectionHeader collection={collection} handle={handle} homeLabel="Home" />
 
-            <Suspense fallback={<BrowseFallback />}>
+            <Suspense
+              fallback={
+                <div className={BROWSE_LAYOUT}>
+                  <div className="hidden lg:block" />
+                  <ProductsGridSkeleton count={PRODUCTS_PER_PAGE} className={GRID_COLUMNS} />
+                </div>
+              }
+            >
               <CollectionBrowseProvider handle={handle} searchStatePromise={searchStatePromise}>
-                <BrowseToolbar
-                  facetsPromise={collectionResultsDataPromise.then(
-                    (data) => data.transformedFilters,
-                  )}
-                  sortExclude={sortExclude}
-                />
-
-                <FilterPendingScope>
-                  <CollectionResultsGrid
-                    afterItemPagePromise={afterItemPagePromise}
-                    collectionResultsDataPromise={collectionResultsDataPromise}
-                  />
-                </FilterPendingScope>
+                <FilterSidebarLayout
+                  sidebar={
+                    <FilterPendingScope>
+                      <CollectionFilters facetsPromise={facetsPromise} />
+                    </FilterPendingScope>
+                  }
+                  toolbar={
+                    <BrowseToolbar
+                      facetsPromise={facetsPromise}
+                      hideFilterTriggerOnDesktop
+                      sortExclude={sortExclude}
+                    />
+                  }
+                >
+                  <FilterPendingScope>
+                    <CollectionResultsGrid
+                      collectionResultsDataPromise={collectionResultsDataPromise}
+                    />
+                  </FilterPendingScope>
+                </FilterSidebarLayout>
               </CollectionBrowseProvider>
             </Suspense>
+
+            {afterItemPagePromise ? (
+              <Suspense fallback={null}>
+                <AfterItems pagePromise={afterItemPagePromise} />
+              </Suspense>
+            ) : null}
           </Sections>
         </Container>
       </Page>
