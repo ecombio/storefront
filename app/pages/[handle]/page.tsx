@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { RichTextPage } from "@/components/content/rich-text-page";
+import { isHiddenPageHandle } from "@/lib/pages/hidden";
 import { getPage } from "@/lib/pages/server";
 import { buildAlternates, buildOpenGraph } from "@/lib/seo";
 import { getShopifySitemapPage } from "@/lib/seo/server";
 
 const PLACEHOLDER_HANDLE = "__placeholder__";
-const HIDDEN_PREFIX = "technical-specifications-";
 
 export async function generateStaticParams() {
   try {
     const { items } = await getShopifySitemapPage("PAGE", 1);
-    const first = items.find((item) => !item.handle.startsWith(HIDDEN_PREFIX));
+    const first = items.find((item) => !isHiddenPageHandle(item.handle));
     return [{ handle: first ? first.handle : PLACEHOLDER_HANDLE }];
   } catch {
     return [{ handle: PLACEHOLDER_HANDLE }];
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }: PageProps<"/pages/[handle]">): Promise<Metadata> {
   const { handle } = await params;
   if (handle === PLACEHOLDER_HANDLE) return {};
-  if (handle.startsWith(HIDDEN_PREFIX)) notFound();
+  if (isHiddenPageHandle(handle)) notFound();
   const page = await getPage({
     handle,
   });
@@ -47,7 +47,7 @@ export const instant = false;
 
 export default async function ShopifyPage({ params }: PageProps<"/pages/[handle]">) {
   const { handle } = await params;
-  if (handle === PLACEHOLDER_HANDLE || handle.startsWith(HIDDEN_PREFIX)) notFound();
+  if (handle === PLACEHOLDER_HANDLE || isHiddenPageHandle(handle)) notFound();
   const page = await getPage({
     handle,
   });

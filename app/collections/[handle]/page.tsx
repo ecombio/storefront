@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 
 import { CollectionDetailPage } from "@/components/collections/collection-page";
 import { getCollectionResultsData, getCollectionSearchState } from "@/lib/collections/server";
-import { getCollection, getCollections } from "@/lib/collections/server";
+import {
+  getCollection,
+  getCollectionAfterItemPage,
+  getCollections,
+} from "@/lib/collections/server";
 import { buildAlternates, buildOpenGraph } from "@/lib/seo";
 
 const PLACEHOLDER_HANDLE = "__placeholder__";
@@ -87,6 +91,8 @@ export default async function CollectionPage({
   });
   if (!collection) notFound();
 
+  const afterItemPagePromise = getCollectionAfterItemPage({ handle });
+
   // Keep searchParams unawaited so the collection header stays in the static shell.
   const searchStatePromise = getCollectionSearchState(searchParams);
   const collectionResultsDataPromise = getCollectionResultsData({
@@ -97,6 +103,7 @@ export default async function CollectionPage({
     <CollectionDetailPage
       collection={collection}
       collectionResultsDataPromise={collectionResultsDataPromise}
+      afterItemPagePromise={afterItemPagePromise}
       handle={handle}
       searchStatePromise={searchStatePromise}
     />

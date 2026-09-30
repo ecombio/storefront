@@ -2,11 +2,16 @@ import { parseCollectionParams, serializeCollectionParams } from "@shopify/hydro
 import { cacheLife, cacheTag } from "next/cache";
 
 import { getBrowseSort, PRODUCTS_PER_PAGE } from "@/lib/collections";
-import type { Collection, CollectionWithThumbnail } from "@/lib/collections/types";
+import type {
+  Collection,
+  CollectionAfterItemPage,
+  CollectionWithThumbnail,
+} from "@/lib/collections/types";
 import type { CommerceLocale } from "@/lib/config/types";
 import { tagProducts } from "@/lib/product/server";
 import {
   fetchCollection,
+  fetchCollectionAfterItemPage,
   fetchCollections,
   fetchCollectionsListing,
 } from "@/lib/shopify/operations/collections/server";
@@ -168,4 +173,15 @@ export async function getAllProductsResultsData({
     },
     transformedFilters: { filters: facets.filters, priceRange: facets.priceRange },
   };
+}
+
+export async function getCollectionAfterItemPage(params: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<CollectionAfterItemPage | undefined> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("collections", `collection-${params.handle}`);
+
+  return fetchCollectionAfterItemPage(params);
 }

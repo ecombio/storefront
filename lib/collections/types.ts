@@ -36,3 +36,10 @@ export interface CollectionWithThumbnail extends Collection {
   thumbnail: Image | null;
   thumbnailProductId: string | null;
 }
+
+export interface CollectionAfterItemPage {
+  id: string;
+  handle: string;
+  title: string;
+  body: string; // HTML from Shopify
+}

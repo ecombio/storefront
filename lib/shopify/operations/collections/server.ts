@@ -1,6 +1,10 @@
 import { flattenConnection, gql } from "@shopify/hydrogen";
 
-import type { Collection, CollectionWithThumbnail } from "@/lib/collections/types";
+import type {
+  Collection,
+  CollectionAfterItemPage,
+  CollectionWithThumbnail,
+} from "@/lib/collections/types";
 import { shopConfig } from "@/lib/config";
 import type { CommerceLocale } from "@/lib/config/types";
 import { assertStorefrontOk } from "@/lib/shopify/errors/server";
@@ -129,4 +133,45 @@ export async function fetchCollectionsListing({
       thumbnailProductId: firstProduct?.id ?? null,
     };
   });
+}
+
+const GET_COLLECTION_AFTER_ITEM_PAGE_QUERY = gql(
+  `#graphql
+  query getCollectionAfterItemPage($handle: String!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    collection(handle: $handle) {
+      metafield(namespace: "custom", key: "after_item_lists") {
+        reference {
+          ... on Page {
+            id
+            handle
+            title
+            body
+          }
+        }
+      }
+    }
+  }
+`,
+);
+
+export async function fetchCollectionAfterItemPage({
+  handle,
+  locale = shopConfig.localization,
+}: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<CollectionAfterItemPage | undefined> {
+  const response = await storefront.request(GET_COLLECTION_AFTER_ITEM_PAGE_QUERY, {
+    locale,
+    variables: { handle },
+  });
+  assertStorefrontOk(response, "getCollectionAfterItemPage");
+  const reference = response.data.collection?.metafield?.reference;
+  if (!reference || !("body" in reference)) return undefined;
+  return {
+    id: reference.id,
+    handle: reference.handle,
+    title: reference.title,
+    body: reference.body,
+  };
 }

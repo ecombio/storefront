@@ -5,9 +5,10 @@ import { ProductsGridSkeleton } from "@/components/product/products-grid";
 import { PRODUCTS_PER_PAGE } from "@/lib/collections";
 import { loadMoreCollectionProductsAction } from "@/lib/collections/action";
 import { ALL_PRODUCTS_HANDLE } from "@/lib/collections/server";
-import { type CollectionResultsData } from "@/lib/collections/types";
+import { type CollectionAfterItemPage, type CollectionResultsData } from "@/lib/collections/types";
 import { loadMoreSearchProductsAction } from "@/lib/search/action";
 
+import { AfterItemList } from "./after-item-list";
 import { InfiniteProductGrid } from "./infinite-product-grid";
 
 function Fallback() {
@@ -20,11 +21,17 @@ function Fallback() {
 }
 
 async function Render({
+  afterItemPagePromise,
   collectionResultsDataPromise,
 }: {
+  afterItemPagePromise?: Promise<CollectionAfterItemPage | undefined>;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
 }) {
-  const { collection, dataSearch, result } = await collectionResultsDataPromise;
+  const [{ collection, dataSearch, result }, afterItemPage] = await Promise.all([
+    collectionResultsDataPromise,
+    afterItemPagePromise ?? Promise.resolve(undefined),
+  ]);
+  const after = afterItemPage ? <AfterItemList page={afterItemPage} /> : null;
   const products = result.products;
   if (products.length === 0) {
     return (
@@ -60,6 +67,7 @@ async function Render({
       initialPageInfo={result.pageInfo}
       outOfStockText="Out of Stock"
       loadMore={loadMoreCollectionProductsAction}
+      after={after}
       loadMoreParams={{
         collection,
       }}
@@ -70,13 +78,18 @@ async function Render({
 }
 
 export function CollectionResultsGrid({
+  afterItemPagePromise,
   collectionResultsDataPromise,
 }: {
+  afterItemPagePromise?: Promise<CollectionAfterItemPage | undefined>;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
 }) {
   return (
     <Suspense fallback={<Fallback />}>
-      <Render collectionResultsDataPromise={collectionResultsDataPromise} />
+      <Render
+        afterItemPagePromise={afterItemPagePromise}
+        collectionResultsDataPromise={collectionResultsDataPromise}
+      />
     </Suspense>
   );
 }

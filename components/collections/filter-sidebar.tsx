@@ -153,11 +153,11 @@ export function CollectionFilterSidebarClient({
               <FilterSectionContent>
                 {filter.presentation === "swatch" ? (
                   <FilterSwatchGrid>
-                    {filter.values.map((value) => {
+                    {filter.values.map((value, valueIndex) => {
                       const isSelected = isFilterInputActive(state.filters, value.input);
                       return (
                         <Link
-                          key={value.id}
+                          key={`${value.id}-${valueIndex}`}
                           aria-label={`Filter by ${filter.label}: ${value.label}`}
                           aria-pressed={isSelected}
                           className="block cursor-pointer"
@@ -180,11 +180,11 @@ export function CollectionFilterSidebarClient({
                   </FilterSwatchGrid>
                 ) : (
                   <FilterOptionList>
-                    {filter.values.map((value) => {
+                    {filter.values.map((value, valueIndex) => {
                       const isSelected = isFilterInputActive(state.filters, value.input);
                       return (
                         <FilterOption
-                          key={value.id}
+                          key={`${value.id}-${valueIndex}`}
                           count={value.count}
                           href={buildToggleHref(state, value.input)}
                           label={value.label}

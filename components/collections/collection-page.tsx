@@ -10,6 +10,7 @@ import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
 import type {
+  CollectionAfterItemPage,
   CollectionResultsData,
   CollectionSearchState,
   Collection,
@@ -20,12 +21,14 @@ import { FilterPendingScope } from "./filter-pending-context";
 
 export function CollectionDetailPage({
   collection,
+  afterItemPagePromise,
   collectionResultsDataPromise,
   handle,
   searchStatePromise,
   sortExclude,
 }: {
   collection: Collection;
+  afterItemPagePromise?: Promise<CollectionAfterItemPage | undefined>;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
   handle: string;
   searchStatePromise: Promise<CollectionSearchState>;
@@ -52,6 +55,7 @@ export function CollectionDetailPage({
 
                 <FilterPendingScope>
                   <CollectionResultsGrid
+                    afterItemPagePromise={afterItemPagePromise}
                     collectionResultsDataPromise={collectionResultsDataPromise}
                   />
                 </FilterPendingScope>

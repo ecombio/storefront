@@ -66,6 +66,14 @@ export function createRequestStorefrontClient(
   });
 }
 
+let requestCounter = 0;
+
+// Counter-based ID: avoids the random value Next.js flags while prerendering.
+function nextRequestId(): string {
+  requestCounter += 1;
+  return `storefront-${requestCounter}`;
+}
+
 function getClient(
   country: CommerceLocale["country"],
   language: CommerceLocale["language"],
@@ -73,7 +81,9 @@ function getClient(
   return createRequestStorefrontClient(
     createShopifyRequestContext({
       i18n: { country, language },
-      request: new Request(`https://${SHOPIFY_STORE_DOMAIN}`),
+      request: new Request(`https://${SHOPIFY_STORE_DOMAIN}`, {
+        headers: { "x-request-id": nextRequestId() },
+      }),
     }),
   );
 }

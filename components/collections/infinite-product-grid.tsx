@@ -18,6 +18,7 @@ interface InfiniteProductGridProps<TParams> {
     params: TParams & { cursor: string; search: string },
   ) => Promise<{ products: ProductCardType[]; pageInfo: PageInfo }>;
   loadMoreParams: TParams;
+  after?: ReactNode;
   children: ReactNode;
 }
 
@@ -28,6 +29,7 @@ export function InfiniteProductGrid<TParams>({
   loadMore,
   loadMoreParams,
   children,
+  after,
 }: InfiniteProductGridProps<TParams>) {
   // The store, not a server snapshot, is the single source of truth for filters and sort mid-scroll.
   const search = useCollection(getBrowseSearch);
@@ -85,6 +87,7 @@ export function InfiniteProductGrid<TParams>({
           {isLoading && <LoaderCircleIcon className="size-6 animate-spin text-muted-foreground" />}
         </div>
       )}
+      {after}
     </>
   );
 }

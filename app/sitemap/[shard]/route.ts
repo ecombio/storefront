@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { shopConfig } from "@/lib/config";
+import { isHiddenPageHandle } from "@/lib/pages/hidden";
 import { getShopPolicies } from "@/lib/policies/server";
 import { getShopifySitemapPage } from "@/lib/seo/server";
 import { type ShopifySitemapType } from "@/lib/shopify/operations/sitemap/types";
@@ -43,7 +44,7 @@ async function renderShard(
   const { items } = await getShopifySitemapPage(type, page);
 
   const entries = items
-    .filter((item) => !item.handle.startsWith("technical-specifications-"))
+    .filter((item) => !isHiddenPageHandle(item.handle))
     .map((item) => {
       const loc = escapeXml(toAbsoluteUrl(item.pathname ?? `/${segment}/${item.handle}`));
       const lastmod = escapeXml(item.updatedAt);
