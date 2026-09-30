@@ -160,6 +160,16 @@ export async function Nav() {
           ))}
         </ul>
       </Container>
+      {/* Blog reading progress: hidden unless an article sets data-reading on <html> */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-px hidden h-0.5 [:root[data-reading]_&]:block"
+      >
+        <div
+          className="h-full origin-left bg-foreground"
+          style={{ transform: "scaleX(var(--reading-progress, 0))" }}
+        />
+      </div>
     </nav>
   );
 }
