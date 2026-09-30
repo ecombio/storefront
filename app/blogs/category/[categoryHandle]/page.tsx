@@ -4,13 +4,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { ArticleCard } from "@/components/blog/article-card";
+import { ArticleTile, formatArticleDate } from "@/components/blog/article-tile";
 import { BlogSubNav } from "@/components/blog/blog-sub-nav";
+import { LoadMoreGrid } from "@/components/blog/load-more-grid";
+import { TagChips } from "@/components/blog/tag-chips";
 import { Container } from "@/components/ui/container";
 import { ImagePlaceholder } from "@/components/ui/image-placeholder";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
 import { getBlog, getBlogList } from "@/lib/blog/server";
+import { collectTags } from "@/lib/blog/tags";
 import { buildAlternates, buildOpenGraph } from "@/lib/seo";
 import { getShopifySitemapPage } from "@/lib/seo/server";
 
@@ -58,50 +61,83 @@ async function BlogCategoryContent({ params }: PageProps<"/blogs/category/[categ
   const blogs = await getBlogList();
   const [hero, ...rest] = blog.articles;
   const heroHref = hero ? `/blogs/articles/${hero.handle}` : "";
+  const featured = blog.articles.slice(0, 5);
+  const tags = collectTags(blog.articles).slice(0, 12);
 
   return (
     <Page className="pt-2.5 md:pt-10">
       <Container>
         <Sections className="gap-8">
           <BlogSubNav active={blog.handle} blogs={blogs} />
-          <h1 className="text-3xl uppercase sm:text-4xl md:text-5xl">{blog.title}</h1>
+          <h1 className="font-semibold text-4xl uppercase tracking-tight md:text-6xl">
+            {blog.title}
+          </h1>
+          <TagChips tags={tags} />
 
           {hero ? (
-            <section className="grid gap-4">
-              <h2 className="text-sm uppercase tracking-wide">The latest</h2>
-              <Link className="relative aspect-3/2 overflow-hidden rounded-xl" href={heroHref}>
-                {hero.image ? (
-                  <Image
-                    alt={hero.image.altText}
-                    className="object-cover"
-                    fill
-                    priority
-                    sizes="(max-width: 1280px) 100vw, 1280px"
-                    src={hero.image.url}
-                  />
-                ) : (
-                  <ImagePlaceholder className="size-full bg-muted" />
-                )}
-              </Link>
-              <div className="grid gap-2">
-                <p className="text-muted-foreground text-sm">{blog.title}</p>
-                <h3 className="font-medium text-2xl uppercase tracking-tight md:text-4xl">
-                  <Link className="hover:underline" href={heroHref}>
-                    {hero.title}
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
+              <div className="grid content-start gap-10">
+                <section className="grid gap-4">
+                  <h2 className="text-xs uppercase tracking-wide">The latest</h2>
+                  <Link className="relative aspect-square overflow-hidden" href={heroHref}>
+                    {hero.image ? (
+                      <Image
+                        alt={hero.image.altText}
+                        className="object-cover"
+                        fill
+                        priority
+                        sizes="(max-width: 1024px) 100vw, 60vw"
+                        src={hero.image.url}
+                      />
+                    ) : (
+                      <ImagePlaceholder className="size-full bg-muted" />
+                    )}
                   </Link>
-                </h3>
+                  <div className="grid gap-2">
+                    <p className="text-muted-foreground text-xs">{blog.title}</p>
+                    <h3 className="font-semibold text-2xl uppercase tracking-tight md:text-4xl">
+                      <Link className="hover:underline" href={heroHref}>
+                        {hero.title}
+                      </Link>
+                    </h3>
+                    <time className="text-muted-foreground text-xs" dateTime={hero.publishedAt}>
+                      {formatArticleDate(hero.publishedAt)}
+                    </time>
+                  </div>
+                </section>
+
+                {rest.length > 0 && (
+                  <LoadMoreGrid
+                    className="grid gap-x-6 gap-y-10 sm:grid-cols-2"
+                    items={rest.map((article) => (
+                      <ArticleTile article={article} category={blog.title} key={article.handle} />
+                    ))}
+                  />
+                )}
               </div>
-            </section>
+
+              <aside className="grid content-start gap-6">
+                <h2 className="text-xs uppercase tracking-wide">Featured</h2>
+                <ol className="grid gap-8">
+                  {featured.map((article, index) => (
+                    <li className="grid gap-2" key={article.handle}>
+                      <span className="font-semibold text-4xl">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <Link
+                        className="font-medium text-sm uppercase hover:underline"
+                        href={`/blogs/articles/${article.handle}`}
+                      >
+                        {article.title}
+                      </Link>
+                      <span className="text-muted-foreground text-xs">{blog.title}</span>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
+            </div>
           ) : (
             <p className="text-muted-foreground">No articles found.</p>
-          )}
-
-          {rest.length > 0 && (
-            <div className="grid gap-10 md:grid-cols-2">
-              {rest.map((article) => (
-                <ArticleCard article={article} key={article.handle} />
-              ))}
-            </div>
           )}
         </Sections>
       </Container>

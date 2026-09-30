@@ -16,6 +16,7 @@ const GET_BLOG_QUERY = gql(
       articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {
         nodes {
           ...ArticleSummaryFields
+          tags
         }
       }
     }
