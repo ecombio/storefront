@@ -2,7 +2,12 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import type { Blog, BlogArticle } from "@/lib/blog/types";
 import type { CommerceLocale } from "@/lib/config/types";
-import { fetchBlog, fetchBlogArticle } from "@/lib/shopify/operations/blogs/server";
+import {
+  fetchArticleByHandle,
+  fetchBlog,
+  fetchBlogArticle,
+  fetchBlogList,
+} from "@/lib/shopify/operations/blogs/server";
 import { fetchCollectionArticles } from "@/lib/shopify/operations/collections/server";
 
 export async function getBlog(params: {
@@ -43,4 +48,25 @@ export async function getCollectionArticles(params: {
   cacheTag("articles", "collections", `collection-${params.handle}`);
 
   return fetchCollectionArticles(params);
+}
+
+export async function getArticleByHandle(params: {
+  articleHandle: string;
+  locale?: CommerceLocale;
+}): Promise<BlogArticle | undefined> {
+  "use cache";
+  cacheLife("max");
+  cacheTag("articles", "blogs", `article-${params.articleHandle}`);
+
+  return fetchArticleByHandle(params);
+}
+
+export async function getBlogList(
+  params: { locale?: CommerceLocale } = {},
+): Promise<{ handle: string; title: string }[]> {
+  "use cache";
+  cacheLife("max");
+  cacheTag("blogs");
+
+  return fetchBlogList(params);
 }

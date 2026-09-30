@@ -64,8 +64,8 @@ export function ShopifyScriptsTracker({ shop, storefrontId }: ShopifyScriptsTrac
         webMcp={shopConfig.browserAgents.webmcp.isEnabled}
       />
       <AnalyticsReady>
-        <PageViewedTracker />
-        <CartAnalyticsTracker />
+        {shopConfig.analytics.shopify.isEnabled && <PageViewedTracker />}
+        {shopConfig.analytics.shopify.isEnabled && <CartAnalyticsTracker />}
       </AnalyticsReady>
     </>
   );

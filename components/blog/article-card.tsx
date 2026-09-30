@@ -10,7 +10,7 @@ export interface ArticleCardProps {
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {
-  const href = `/blogs/${article.blogHandle}/${article.handle}`;
+  const href = `/blogs/articles/${article.handle}`;
   const publishedAt = new Intl.DateTimeFormat(shopConfig.localization.locale, {
     dateStyle: "long",
   }).format(new Date(article.publishedAt));

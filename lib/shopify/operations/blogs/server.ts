@@ -93,3 +93,68 @@ export async function fetchBlogArticle({
 
   return transformArticle(blog.articleByHandle, blog);
 }
+
+const GET_ARTICLE_BY_HANDLE_QUERY = gql(
+  `#graphql
+  query getArticleByHandle($articleHandle: String!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    blogs(first: 25) {
+      nodes {
+        ...BlogFields
+        articleByHandle(handle: $articleHandle) {
+          ...ArticleSummaryFields
+          contentHtml
+          seo {
+            description
+            title
+          }
+          tags
+        }
+      }
+    }
+  }
+`,
+  [ARTICLE_SUMMARY_FRAGMENT, BLOG_FRAGMENT],
+);
+
+export async function fetchArticleByHandle({
+  articleHandle,
+  locale = shopConfig.localization,
+}: {
+  articleHandle: string;
+  locale?: CommerceLocale;
+}): Promise<BlogArticle | undefined> {
+  const response = await storefront.request(GET_ARTICLE_BY_HANDLE_QUERY, {
+    locale,
+    variables: { articleHandle },
+  });
+  assertStorefrontOk(response, "getArticleByHandle");
+
+  for (const blog of response.data.blogs.nodes) {
+    if (blog.articleByHandle) return transformArticle(blog.articleByHandle, blog);
+  }
+  return undefined;
+}
+
+const GET_BLOG_LIST_QUERY = gql(`#graphql
+  query getBlogList($first: Int!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    blogs(first: $first) {
+      nodes {
+        handle
+        title
+      }
+    }
+  }
+`);
+
+export async function fetchBlogList({
+  locale = shopConfig.localization,
+}: {
+  locale?: CommerceLocale;
+} = {}): Promise<{ handle: string; title: string }[]> {
+  const response = await storefront.request(GET_BLOG_LIST_QUERY, {
+    locale,
+    variables: { first: 25 },
+  });
+  assertStorefrontOk(response, "getBlogList");
+  return response.data.blogs.nodes.map((blog) => ({ handle: blog.handle, title: blog.title }));
+}
