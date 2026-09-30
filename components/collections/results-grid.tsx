@@ -47,7 +47,7 @@ async function Render({
         initialPageInfo={result.pageInfo}
         outOfStockText="Out of Stock"
         loadMore={loadMoreSearchProductsAction}
-        gridClassName="sm:grid-cols-3 lg:group-data-[collapsed=true]/browse:grid-cols-4"
+        gridClassName="sm:grid-cols-3 lg:group-data-[collapsed=true]/browse:grid-cols-4 [&_[data-slot=product-card-image]]:aspect-5/4"
         loadMoreParams={{}}
       >
         {cards}
@@ -61,7 +61,7 @@ async function Render({
       initialPageInfo={result.pageInfo}
       outOfStockText="Out of Stock"
       loadMore={loadMoreCollectionProductsAction}
-      gridClassName="sm:grid-cols-3 lg:group-data-[collapsed=true]/browse:grid-cols-4"
+      gridClassName="sm:grid-cols-3 lg:group-data-[collapsed=true]/browse:grid-cols-4 [&_[data-slot=product-card-image]]:aspect-5/4"
       loadMoreParams={{
         collection,
       }}

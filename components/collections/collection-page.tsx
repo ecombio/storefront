@@ -10,7 +10,9 @@ import { CollectionSchema } from "@/components/schema/collection-schema";
 import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
+import type { BlogArticle } from "@/lib/blog/types";
 import { PRODUCTS_PER_PAGE } from "@/lib/collections";
+import type { CollectionWithThumbnail } from "@/lib/collections/types";
 import type {
   CollectionAfterItemPage,
   CollectionResultsData,
@@ -19,10 +21,13 @@ import type {
 } from "@/lib/collections/types";
 
 import { AfterItemList } from "./after-item-list";
+import { ArticleGrid } from "./article-grid";
 import { CollectionBrowseProvider } from "./collection-browse-provider";
+import { CollectionTabs } from "./collection-tabs";
 import { FilterPendingScope } from "./filter-pending-context";
 import { FilterSidebarLayout } from "./filter-sidebar-layout";
 import { CollectionFilters } from "./filters";
+import { SubCollectionTiles } from "./sub-collection-tiles";
 
 const BROWSE_LAYOUT = "lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10";
 const GRID_COLUMNS = "sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3";
@@ -38,6 +43,9 @@ async function AfterItems({
 
 export function CollectionDetailPage({
   afterItemPagePromise,
+  articles = [],
+  productCount,
+  subCollections = [],
   collection,
   collectionResultsDataPromise,
   handle,
@@ -45,6 +53,9 @@ export function CollectionDetailPage({
   sortExclude,
 }: {
   afterItemPagePromise?: Promise<CollectionAfterItemPage | undefined>;
+  articles?: BlogArticle[];
+  productCount?: number;
+  subCollections?: CollectionWithThumbnail[];
   collection: Collection;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
   handle: string;
@@ -63,37 +74,44 @@ export function CollectionDetailPage({
           <Sections className="gap-5">
             <CollectionHeader collection={collection} handle={handle} homeLabel="Home" />
 
-            <Suspense
-              fallback={
-                <div className={BROWSE_LAYOUT}>
-                  <div className="hidden lg:block" />
-                  <ProductsGridSkeleton count={PRODUCTS_PER_PAGE} className={GRID_COLUMNS} />
-                </div>
-              }
+            <CollectionTabs
+              advice={<ArticleGrid articles={articles} />}
+              adviceCount={articles.length}
+              productCount={productCount}
             >
-              <CollectionBrowseProvider handle={handle} searchStatePromise={searchStatePromise}>
-                <FilterSidebarLayout
-                  sidebar={
+              <Suspense
+                fallback={
+                  <div className={BROWSE_LAYOUT}>
+                    <div className="hidden lg:block" />
+                    <ProductsGridSkeleton count={PRODUCTS_PER_PAGE} className={GRID_COLUMNS} />
+                  </div>
+                }
+              >
+                <CollectionBrowseProvider handle={handle} searchStatePromise={searchStatePromise}>
+                  <FilterSidebarLayout
+                    sidebar={
+                      <FilterPendingScope>
+                        <CollectionFilters facetsPromise={facetsPromise} />
+                      </FilterPendingScope>
+                    }
+                    toolbar={
+                      <BrowseToolbar
+                        facetsPromise={facetsPromise}
+                        hideFilterTriggerOnDesktop
+                        sortExclude={sortExclude}
+                      />
+                    }
+                  >
+                    <SubCollectionTiles collections={subCollections} />
                     <FilterPendingScope>
-                      <CollectionFilters facetsPromise={facetsPromise} />
+                      <CollectionResultsGrid
+                        collectionResultsDataPromise={collectionResultsDataPromise}
+                      />
                     </FilterPendingScope>
-                  }
-                  toolbar={
-                    <BrowseToolbar
-                      facetsPromise={facetsPromise}
-                      hideFilterTriggerOnDesktop
-                      sortExclude={sortExclude}
-                    />
-                  }
-                >
-                  <FilterPendingScope>
-                    <CollectionResultsGrid
-                      collectionResultsDataPromise={collectionResultsDataPromise}
-                    />
-                  </FilterPendingScope>
-                </FilterSidebarLayout>
-              </CollectionBrowseProvider>
-            </Suspense>
+                  </FilterSidebarLayout>
+                </CollectionBrowseProvider>
+              </Suspense>
+            </CollectionTabs>
 
             {afterItemPagePromise ? (
               <Suspense fallback={null}>

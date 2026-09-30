@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { CollectionDetailPage } from "@/components/collections/collection-page";
+import { getCollectionArticles } from "@/lib/blog/server";
+import { getCollectionSubCollections } from "@/lib/collections/server";
 import { getCollectionResultsData, getCollectionSearchState } from "@/lib/collections/server";
 import {
   getCollection,
   getCollectionAfterItemPage,
+  getCollectionProductCount,
   getCollections,
 } from "@/lib/collections/server";
 import { buildAlternates, buildOpenGraph } from "@/lib/seo";
@@ -99,11 +102,20 @@ export default async function CollectionPage({
     handle,
     searchStatePromise,
   });
+  const [articles, productCount, subCollections] = await Promise.all([
+    getCollectionArticles({ handle }),
+    getCollectionProductCount({ handle }),
+    getCollectionSubCollections({ handle }),
+  ]);
+
   return (
     <CollectionDetailPage
       collection={collection}
       collectionResultsDataPromise={collectionResultsDataPromise}
       afterItemPagePromise={afterItemPagePromise}
+      articles={articles}
+      productCount={productCount}
+      subCollections={subCollections}
       handle={handle}
       searchStatePromise={searchStatePromise}
     />

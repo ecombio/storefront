@@ -9,6 +9,7 @@ import type {
 } from "@/lib/collections/types";
 import type { CommerceLocale } from "@/lib/config/types";
 import { tagProducts } from "@/lib/product/server";
+import { fetchCollectionSubCollections } from "@/lib/shopify/operations/collections/server";
 import {
   fetchCollection,
   fetchCollectionAfterItemPage,
@@ -184,4 +185,42 @@ export async function getCollectionAfterItemPage(params: {
   cacheTag("collections", `collection-${params.handle}`);
 
   return fetchCollectionAfterItemPage(params);
+}
+
+// The Storefront API has no collection total, so sum the availability facet (in stock + out of stock).
+// Falls back to search totalCount when that filter isn't enabled in Search & Discovery.
+export async function getCollectionProductCount(params: { handle: string }): Promise<number> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("collections", `collection-${params.handle}`);
+
+  const { filters } = await fetchCollectionProducts({ collection: params.handle, limit: 1 });
+  const availability = filters.find((f) => /availab/i.test(`${f.id} ${f.paramKey} ${f.label}`));
+  const summed = availability?.values.reduce((sum, v) => sum + v.count, 0) ?? 0;
+  if (summed > 0) return summed;
+
+  try {
+    const { total } = await fetchSearchFacets({ collection: params.handle });
+    return total;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getCollectionSubCollections(params: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<CollectionWithThumbnail[]> {
+  "use cache";
+  cacheLife("max");
+  cacheTag("collections", `collection-${params.handle}`);
+
+  const subCollections = await fetchCollectionSubCollections(params);
+  tagCollections(subCollections);
+  tagProducts(
+    subCollections.flatMap((collection) =>
+      collection.thumbnailProductId ? [{ id: collection.thumbnailProductId }] : [],
+    ),
+  );
+  return subCollections;
 }
