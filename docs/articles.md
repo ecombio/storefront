@@ -127,6 +127,10 @@ These need no markers.
 - **Load More.** Grids show 6 articles at a time, with "Viewing 1 - N of N articles" under them.
 - **Byline.** Author and date come from the Shopify post. If the post has an author profile, the name links to the author page.
 - **Author card.** Posts with an author profile show a card under the body (see Authors).
+- **Article header.** Category, uppercase title, byline, and tag chips, all left-aligned. Each chip links to its tag page. The hero image fills the main column, the body text lines up with its left and right edges, and the Contents box starts level with the top of the image.
+- **Back to top.** A button appears at the bottom right once the reader is 40% of the way down the page.
+- **Reading progress.** A thin line along the bottom edge of the sticky header fills as the reader moves through the article. It slides away and returns with the header, and it only shows on article pages.
+- **You may like.** Up to three related articles in the sidebar, each showing category, title, and author. Related means shared tags first, then the same blog, then newest. Articles without a featured image show a gray placeholder, so add an image to every post.
 
 ---
 
@@ -212,6 +216,9 @@ Notes:
 | Contents sidebar is missing                        | The article needs two or more Heading 2 sections, and the screen must be wide.                                                                                                            |
 | Author card is missing                             | The post has no **author_profile** picked, or Storefront API access is off on the Author definition or the metafield. Also check that `photo` is a File field and `bio` is not rich text. |
 | Tag chips are missing                              | The category's articles have no tags. Add tags in Shopify.                                                                                                                                |
+| Progress line is missing                           | Check that `<html>` has `data-reading` on the article page. If not, `[data-article-body]` is missing from `article-page.tsx`.                                                             |
+| "You may like" shows gray boxes                    | Those articles have no featured image. Add one in Shopify.                                                                                                                                |
+| "You may like" shows the wrong author              | The post has no **author_profile**, so it falls back to the staff Author field.                                                                                                           |
 | Changes do not appear locally                      | Content is cached. Restart `pnpm dev`. In production, the cache refreshes from Shopify's webhooks.                                                                                        |
 | Old version still showing after saving             | Wait a minute and reload. If it persists, check the deployment status in Vercel.                                                                                                          |
 
@@ -221,30 +228,41 @@ Notes:
 
 ### Files
 
-| File                                              | Purpose                                                              |
-| ------------------------------------------------- | -------------------------------------------------------------------- |
-| `app/blogs/category/[categoryHandle]/page.tsx`    | Category page: title, tag chips, hero, grid, Featured list           |
-| `app/blogs/author/[authorHandle]/page.tsx`        | Author page: profile, topic chips, article grid                      |
-| `app/blogs/tag/[tagHandle]/page.tsx`              | Tag page                                                             |
-| `app/blogs/articles/[articleHandle]/page.tsx`     | Article route                                                        |
-| `app/blogs/[blogHandle]/page.tsx`                 | Redirect to the category page                                        |
-| `app/blogs/[blogHandle]/[articleHandle]/page.tsx` | Redirect to the article page                                         |
-| `components/blog/article-page.tsx`                | Article layout and Contents sidebar                                  |
-| `components/blog/article-body.tsx`                | Renders parsed body segments (HTML, accordions, buttons, products)   |
-| `components/blog/product-strip.tsx`               | Single, duo, and trio product layouts                                |
-| `components/blog/author-card.tsx`                 | Author card shown under the article body                             |
-| `components/blog/article-tile.tsx`                | Grid tile used on category and tag pages                             |
-| `components/blog/load-more-grid.tsx`              | Client-side "Load More" grid                                         |
-| `components/blog/tag-chips.tsx`                   | Tag chip row                                                         |
-| `components/blog/blog-sub-nav.tsx`                | Category row at the top of blog pages                                |
-| `lib/blog/shortcodes.ts`                          | Shortcode parser and heading-id generator                            |
-| `lib/blog/author-server.ts`                       | Author queries: groups articles by profile handle, loads the profile |
-| `lib/blog/tags.ts`                                | Tag helpers: slug conversion, tag counting                           |
-| `lib/blog/tag-server.ts`                          | Cross-blog article and tag queries                                   |
-| `lib/blog/server.ts`                              | Cached blog and article fetchers                                     |
-| `lib/shopify/operations/blogs/server.ts`          | Shopify Storefront API queries                                       |
-| `app/sitemap/[shard]/route.ts`                    | Sitemap shards (blogs list `/blogs/category/...`)                    |
-| `lib/shopify/operations/sitemap/server.ts`        | Article sitemap paths (`/blogs/articles/...`)                        |
+| File                                              | Purpose                                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `app/blogs/category/[categoryHandle]/page.tsx`    | Category page: title, tag chips, hero, grid, Featured list                                             |
+| `app/blogs/author/[authorHandle]/page.tsx`        | Author page: profile, topic chips, article grid                                                        |
+| `app/blogs/tag/[tagHandle]/page.tsx`              | Tag page                                                                                               |
+| `app/blogs/articles/[articleHandle]/page.tsx`     | Article route                                                                                          |
+| `app/blogs/[blogHandle]/page.tsx`                 | Redirect to the category page                                                                          |
+| `app/blogs/[blogHandle]/[articleHandle]/page.tsx` | Redirect to the article page                                                                           |
+| `components/blog/article-page.tsx`                | Article layout: header, tag chips, hero, body, Contents sidebar                                        |
+| `components/blog/article-body.tsx`                | Renders parsed body segments (HTML, accordions, buttons, products)                                     |
+| `components/blog/product-strip.tsx`               | Single, duo, and trio product layouts                                                                  |
+| `components/blog/author-card.tsx`                 | Author card shown under the article body                                                               |
+| `components/blog/article-tile.tsx`                | Article tile for grids and "You may like" (optional `showAuthor` shows the author instead of the date) |
+| `components/blog/back-to-top.tsx`                 | Client button. Appears after `SHOW_AT` (0.4) of the page is scrolled.                                  |
+| `components/blog/reading-progress.tsx`            | Writes `--reading-progress` (0 to 1) and `data-reading` on `<html>`. Renders nothing itself.           |
+| `components/blog/related-articles.tsx`            | "You may like" list. Scores by shared tags, then same blog, then date.                                 |
+| `components/nav/index.tsx`                        | Also renders the progress line inside the sticky `<nav>`, so it hides and shows with the header.       |
+| `components/blog/load-more-grid.tsx`              | Client-side "Load More" grid                                                                           |
+| `components/blog/tag-chips.tsx`                   | Tag chip row                                                                                           |
+| `components/blog/blog-sub-nav.tsx`                | Category row at the top of blog pages                                                                  |
+| `lib/blog/shortcodes.ts`                          | Shortcode parser and heading-id generator                                                              |
+| `lib/blog/author-server.ts`                       | Author queries: groups articles by profile handle, loads the profile                                   |
+| `lib/blog/tags.ts`                                | Tag helpers: slug conversion, tag counting                                                             |
+| `lib/blog/tag-server.ts`                          | Cross-blog article and tag queries                                                                     |
+| `lib/blog/server.ts`                              | Cached blog and article fetchers                                                                       |
+| `lib/shopify/operations/blogs/server.ts`          | Shopify Storefront API queries                                                                         |
+| `app/sitemap/[shard]/route.ts`                    | Sitemap shards (blogs list `/blogs/category/...`)                                                      |
+| `lib/shopify/operations/sitemap/server.ts`        | Article sitemap paths (`/blogs/articles/...`)                                                          |
+
+### Article page extras
+
+- Reading progress is measured on the element marked `data-article-body` in `article-page.tsx`. Keep that attribute on the left column.
+- The header line in `components/nav/index.tsx` only shows while `<html>` has `data-reading`. If it never appears, check that attribute and that `--reading-progress` changes while scrolling.
+- `article-page.tsx` has a local `tagHandle()` helper that duplicates the slug rule in `lib/blog/tags.ts`. Switch to the shared helper if one is exported.
+- "You may like" reads from `getAllArticles()`, so it is limited to the 50-per-blog cap.
 
 ### How the body is rendered
 
