@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ArticleTile } from "@/components/blog/article-tile";
+import { AuthorBadge } from "@/components/blog/author-badge";
 import { BlogSubNav } from "@/components/blog/blog-sub-nav";
 import { LoadMoreGrid } from "@/components/blog/load-more-grid";
+import { RichText } from "@/components/blog/rich-text";
 import { Container } from "@/components/ui/container";
 import { Page } from "@/components/ui/page";
 import { Sections } from "@/components/ui/sections";
@@ -63,14 +65,17 @@ async function BlogAuthorContent({ params }: PageProps<"/blogs/author/[authorHan
           <div className="grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
             <aside className="grid content-start gap-4">
               {profile.photo && (
-                <div className="relative size-24 overflow-hidden rounded-full bg-muted">
-                  <Image
-                    alt={profile.photo.altText}
-                    className="object-cover"
-                    fill
-                    sizes="96px"
-                    src={profile.photo.url}
-                  />
+                <div className="relative size-24 shrink-0">
+                  <div className="relative size-full overflow-hidden rounded-full bg-muted">
+                    <Image
+                      alt={profile.photo.altText}
+                      className="object-cover"
+                      fill
+                      sizes="96px"
+                      src={profile.photo.url}
+                    />
+                  </div>
+                  <AuthorBadge className="absolute bottom-0 left-1/2 size-6 -translate-x-1/2 translate-y-1/3 rounded-full" />
                 </div>
               )}
               <h1 className="font-semibold text-xl uppercase tracking-tight">{profile.name}</h1>
@@ -78,9 +83,9 @@ async function BlogAuthorContent({ params }: PageProps<"/blogs/author/[authorHan
                 <p className="text-muted-foreground text-sm uppercase">{profile.role}</p>
               )}
               {profile.bio && (
-                <p className="whitespace-pre-line text-muted-foreground text-sm leading-6">
-                  {profile.bio}
-                </p>
+                <div className="whitespace-pre-line text-muted-foreground text-sm leading-6">
+                  <RichText value={profile.bio} />
+                </div>
               )}
             </aside>
             <div className="grid content-start gap-8">
