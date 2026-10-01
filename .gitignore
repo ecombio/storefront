@@ -56,3 +56,5 @@ certificates
 tmp/
 
 *.bak*
+
+seo-data/

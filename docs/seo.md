@@ -180,3 +180,28 @@ To fill in missing SEO fields in bulk, follow the write rules in `terminal-cms.m
 4. **What counts toward 100.** Real published posts only, or any article.
 5. **Featured images and alt text** for the three newest posts.
 6. **Redirect support.** Test whether this app can manage redirects before any handle change.
+
+## Keyword map (Semrush, 2026-09-30, seed: electric bike)
+
+Targets (volume, KD): pedal assist electric bike (8.1k, 19); foldable/folding electric bike (27k/18k, 40); electric bike conversion kit (14.8k, 31); how to convert a bike to electric diy (9.9k, 35); electric mountain bike (18k, 28); fat tire electric bike (12k, 36); electric commuter bike (8.1k, 28); cheap/affordable electric bike (9.9k, 33/32); fastest electric bike (8.1k, 22); electric bike for kids (8.1k, 14); three wheel electric bike (8.1k, 34).
+Skip: brand, "near me", "for sale", retailer, and misspelling queries.
+Pillar to build toward: electric bike for adults (60.5k, 49).
+
+## Question-keyword map (Semrush Questions tab, seed: electric bike, 2026-09-30)
+
+One post per cluster (variants share a SERP):
+
+- Cost: how much does an electric bike cost (15k+ combined, KD 8-46)
+- What is an e-bike (~12k, KD 35-66)
+- Speed: how fast do electric bikes go / fastest e bike (~8k + 8.1k, KD 11-22)
+- License: do you need a license for an electric bike (~3k, KD 5-24)
+- Street legal: are e bikes street legal (~2.7k, KD 14-32)
+- How e-bikes work (~4k, KD 16-26)
+- Do you have to pedal (~740, KD 5-11)
+- Rain / waterproof (~1k, KD 6-14)
+- Are e-bikes worth it / safe (~580, KD 16-30)
+- Weight (~800, KD 8)
+- Charging / battery reset (~800, KD 3-16)
+- DIY conversion (~10k, KD 32-35) and conversion kits (14.8k, KD 31)
+  Skip: where-to-buy/near-me (collection pages), brand queries, dirt bike queries unless sold, speed-limiter removal.
+  Check overlap with existing posts (esp. electric bike classes) before drafting.
