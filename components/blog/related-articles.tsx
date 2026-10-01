@@ -32,7 +32,7 @@ export async function RelatedArticles({
       <h2 className="text-xs uppercase tracking-wide">You may like</h2>
       <div className="grid gap-8">
         {picks.map((other) => (
-          <ArticleTile article={other} category={other.blogTitle} key={other.handle} />
+          <ArticleTile article={other} category={other.blogTitle} key={other.handle} showAuthor />
         ))}
       </div>
     </section>

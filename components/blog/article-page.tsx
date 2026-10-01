@@ -102,7 +102,7 @@ export function ArticlePage({ article }: ArticlePageProps) {
                   />
                 </div>
               )}
-              <div className="mx-auto grid w-full max-w-[42rem] content-start gap-12">
+              <div className="grid w-full content-start gap-12">
                 <ArticleBody segments={segments} />
                 {article.authorProfile && <AuthorCard profile={article.authorProfile} />}
               </div>

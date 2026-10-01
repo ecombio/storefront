@@ -18,10 +18,13 @@ export function formatArticleDate(value: string): string {
 export interface ArticleTileProps {
   article: BlogArticle;
   category: string;
+  /** Show the author name instead of the date (used in "You may like"). */
+  showAuthor?: boolean;
 }
 
-export function ArticleTile({ article, category }: ArticleTileProps) {
+export function ArticleTile({ article, category, showAuthor = false }: ArticleTileProps) {
   const href = `/blogs/articles/${article.handle}`;
+  const author = article.authorProfile?.name ?? article.author;
   return (
     <article className="grid content-start gap-3">
       <Link className="relative aspect-square overflow-hidden" href={href}>
@@ -44,9 +47,15 @@ export function ArticleTile({ article, category }: ArticleTileProps) {
             {article.title}
           </Link>
         </h3>
-        <time className="text-muted-foreground text-xs" dateTime={article.publishedAt}>
-          {formatArticleDate(article.publishedAt)}
-        </time>
+        {showAuthor ? (
+          author ? (
+            <p className="text-muted-foreground text-xs">{author}</p>
+          ) : null
+        ) : (
+          <time className="text-muted-foreground text-xs" dateTime={article.publishedAt}>
+            {formatArticleDate(article.publishedAt)}
+          </time>
+        )}
       </div>
     </article>
   );
