@@ -5,6 +5,7 @@ Terminal CMS is a private Shopify app (created in the Shopify Dev Dashboard) tha
 It has no user interface. It exists only to issue an Admin API access token to scripts we run ourselves.
 
 - **Store:** `ecombio.myshopify.com`
+- **Storefront:** `https://ecombio.com`
 - **Previous name:** Terminal tag edits
 - **Admin API version used in scripts:** `2025-01`
 
@@ -44,6 +45,7 @@ Get-Content .env.local | ForEach-Object { if ($_ -match '^\s*([^#=]+?)\s*=\s*"?(
 
 $resp = Invoke-RestMethod -Method Post -Uri "https://ecombio.myshopify.com/admin/oauth/access_token" -ContentType "application/x-www-form-urlencoded" -Body @{ grant_type = "client_credentials"; client_id = $env["SHOPIFY_ADMIN_CLIENT_ID"]; client_secret = $env["SHOPIFY_ADMIN_CLIENT_SECRET"] }
 $headers = @{ "X-Shopify-Access-Token" = $resp.access_token; "Content-Type" = "application/json" }
+$url = "https://ecombio.myshopify.com/admin/api/2025-01/graphql.json"
 $resp.scope
 ```
 
@@ -169,7 +171,7 @@ Both affect how the storefront builds pages, so check them before bulk edits. De
 **Authors**
 
 - Authors are **Author** metaobject entries (fields: name, role, bio, photo). Each entry's handle is its URL: `/blogs/author/{handle}`.
-- Each post points to its author through the `custom.author_profile` metafield. The staff Author field is only a fallback.
+- Each post points to its author through the `custom.author_profile` metafield. The staff Author field is only a fallback. Create or update it through the Admin API with type `mixed_reference` (not `metaobject_reference`) and the GID of the Author entry as the value.
 - The author page shows the photo, role, and bio from the author's **newest** post, so set `author_profile` on every post a person writes.
 - A post with no profile shows the staff name with no card and no byline link.
 - The Author definition already exists. Scripts should edit entries, not the definition, which is read only for this app.
@@ -298,7 +300,32 @@ Reusable scripts live in `cms/` at the repo root. Run them from the repository r
 .\cms\create-draft-posts.ps1 -Apply   # creates the drafts
 ```
 
+If PowerShell blocks a script as not digitally signed, run `Set-ExecutionPolicy -Scope Process Bypass` once in that window first.
+
 One-off runbook scripts (tag plans, tag normalization) stay inline in this file.
+
+## SEO data (Semrush)
+
+Semrush data is used to choose blog topics by search demand and difficulty instead of guesswork. Status as of 2026-09-30: the Semrush connector is available in Claude's directory but is not connected yet. Without it, export CSVs from Semrush and attach them in the chat.
+
+Plan features under consideration (the tier above Starter; the plan name and price were not confirmed, so check Semrush's pricing page before buying):
+
+- Tracking: monitor 100 prompts and 1,500 keywords daily
+- Historical data: view SEO ranking trends since 2012
+- Content optimization: create better content with AI
+- Multi-targeting: track multiple locations or search engines
+- Keyword cannibalization: resolve competing pages
+
+Findings on which features matter for the 100-post goal:
+
+- **Most useful: keyword cannibalization.** The blog already has overlapping scooter guides (Best Commuter, For Adults, Under $1000, For Heavy Riders, Foldable for Commute). Adding about 70 more posts raises the risk of our own pages competing for the same searches, so check new topics against existing posts before writing them.
+- **Useful once posts are live: daily keyword tracking.** 1,500 keywords covers about 100 posts at 3 to 5 keywords each. The 100 prompt slots track whether AI search tools mention the store.
+- **Not needed now:** content optimization with AI (posts are already drafted through `cms/create-draft-posts.ps1`), multi-targeting (only useful when selling in several countries or caring about engines beyond Google), and history since 2012 (good for studying competitors, not needed to pick the next topics).
+- A trial or CSV exports from any plan are enough to plan the first batch.
+
+Exports that help: Keyword Magic Tool results for scooter, e-bike, and electric skateboard terms; Organic Research for `ecombio.com`; Keyword Gap against two or three competitors.
+
+How it feeds the workflow: each new draft targets one keyword, its SEO title and description are written around that keyword, and topics are ordered by volume against difficulty.
 
 ## Working conventions
 
@@ -333,9 +360,9 @@ Rotate immediately if the secret is ever exposed.
 
 Last audit of the store's articles (update this section after each job):
 
-- **56 articles** across five blogs: Articles, Athletes, Authors, Category, and cycling. About 20 of them look like template or demo posts (for example Button, Quote, Images Gallery, Recipe Header, Table of Contents, Social Share, FAQ Section). They have no tags, and they should stay untagged. Audit on 2026-09-30: all 56 were published (Articles 35, Athletes 2, Authors 1, Category 4, cycling 14), so the template posts are live on the storefront.
-- **Tags in use** (earlier count): `electric-scooters` 15, `cycling` 4, `electric-scooter-buying-guide` 4, `Cycling Guides` 1, `cycling-1` 1, `electric-mountain-bikes` 1, `Scootering` 1, `Stretching & Mobility` 1. Spellings are mixed between hyphenated and readable names. `articles.md` recommends readable, consistent names.
-- **Phase 1 (fixes and additions) was applied and verified on 2026-09-30:** 15 articles updated. Tag counts now: `electric-scooters` 26, `electric-scooter-buying-guide` 11, `cycling` 2, `Cycling Guides` 2, `Scootering` 2, `electric-mountain-bikes` 1. `cycling-1` and `Stretching & Mobility` are gone. A snapshot of the state before phase 1 was saved in the user's temp folder as `articles-snapshot-20260930-213826.json`.
+- **59 articles** across five blogs: Articles, Athletes, Authors, Category, and cycling. About 20 of them look like template or demo posts (for example Button, Quote, Images Gallery, Recipe Header, Table of Contents, Social Share, FAQ Section). They have no tags, and they should stay untagged. Audit on 2026-09-30: all 56 were published (Articles 35, Athletes 2, Authors 1, Category 4, cycling 14), so the template posts are live on the storefront. The 3 new posts were published afterwards (Articles 37, cycling 15), so all 59 are published and about 28 are real content.
+- **Tags in use before phase 1:** `electric-scooters` 15, `cycling` 4, `electric-scooter-buying-guide` 4, `Cycling Guides` 1, `cycling-1` 1, `electric-mountain-bikes` 1, `Scootering` 1, `Stretching & Mobility` 1. Spellings are mixed between hyphenated and readable names. `articles.md` recommends readable, consistent names.
+- **Phase 1 (fixes and additions) was applied and verified on 2026-09-30:** 15 articles updated. Tag counts now: `electric-scooters` 26, `electric-scooter-buying-guide` 11, `cycling` 2, `Cycling Guides` 2, `Scootering` 2, `electric-mountain-bikes` 1. `cycling-1` and `Stretching & Mobility` are gone. The 3 new posts then added `Electric Scooters` 2 (same tag page as `electric-scooters`, so 28 combined), `Electric Bikes` 2 (new tag page), and `Cycling Guides` 1 (now 3). A snapshot of the state before phase 1 was saved in the user's temp folder as `articles-snapshot-20260930-213826.json`.
 
 **Wrong tags found (all fixed in phase 1 except Customer Support):**
 
@@ -348,12 +375,14 @@ Last audit of the store's articles (update this section after each job):
 
 **Open tasks:**
 
-1. Confirm the proposed plan, then run it in preview and apply modes.
+1. Done: the phase 1 plan was previewed and applied on 2026-09-30.
 2. Phase 2: normalize the tag spellings with the map script in "Updating tags (runbook)", then update the counts in this section.
 3. Decide the final readable spellings and normalize them (for example `electric-scooters` to `Electric Scooters`). Tag URLs do not change for case and spacing changes, so this is cosmetic.
 4. Check which articles lack the `custom.author_profile` metafield.
 5. Resolve doc conflicts: `articles.md` says the author `bio` is multi-line text, but it may have been set up as rich text. `roadmap.md` also lists `docs/requirements.md`, which does not exist.
 6. Add `terminal-cms.md` and `cms.md` to the related docs lists in `roadmap.md` and `README.md`.
 7. Move any hardcoded tag links inside post bodies if tag URLs change. A scan for `/blogs/tag/` in post bodies has not been run yet.
-8. Review and publish the three drafts made by `cms/create-draft-posts.ps1`. They don't count toward the 100-post goal until published. The new `Electric Bikes` tag creates `/blogs/tag/electric-bikes`.
+8. Done: published the three posts made by `cms/create-draft-posts.ps1`. The new `Electric Bikes` tag page is live at `/blogs/tag/electric-bikes`.
 9. Decide whether the 100-post goal counts only real published posts.
+10. Add featured images to the three published posts (E-Bike vs Electric Scooter, Electric Bike Classes Explained, Electric Scooter Range Explained).
+11. Decide on Semrush: connect the connector or export CSVs (Keyword Magic Tool, Organic Research for `ecombio.com`, Keyword Gap), then plan the next batch of drafts around target keywords and check for cannibalization against existing posts.
