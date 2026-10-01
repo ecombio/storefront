@@ -1,7 +1,7 @@
-# Fetches web pages as clean markdown via Jina Reader (r.jina.ai) into seo-data/external/.
+# Fetches web pages as clean markdown via Jina Reader (r.jina.ai) into docs/storefronts/blog/seo/external/.
 # Research only: read-only, never writes to Shopify.
-#   python cms\fetch-external.py https://example.com/page1 https://example.com/page2
-#   python cms\fetch-external.py --file seo-data\urls.txt      (one URL per line, # for comments)
+#   python docs\apps\terminal-cms\scripts\fetch-external.py https://example.com/page1 https://example.com/page2
+#   python docs\apps\terminal-cms\scripts\fetch-external.py --file docs\storefronts\blog\seo\urls.txt      (one URL per line, # for comments)
 # Optional: set JINA_API_KEY in your environment for higher rate limits.
 import argparse, os, re, sys, time, urllib.request, urllib.error
 from datetime import date
@@ -24,7 +24,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('urls', nargs='*')
     ap.add_argument('--file')
-    ap.add_argument('--out', default=os.path.join('seo-data', 'external'))
+    ap.add_argument('--out', default=os.path.join('docs', 'storefronts', 'blog', 'seo', 'external'))
     ap.add_argument('--delay', type=float, default=3.0, help='seconds between requests')
     ap.add_argument('--force', action='store_true', help='overwrite existing files')
     a = ap.parse_args()

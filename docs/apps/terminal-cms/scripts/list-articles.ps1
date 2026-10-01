@@ -1,7 +1,7 @@
 # Lists all blog articles in Shopify (read-only) and checks keyword-cluster coverage.
 # Run from the repository root (it reads .env.local there):
-#   .\cms\list-articles.ps1                 # all articles + keyword coverage
-#   .\cms\list-articles.ps1 -Find 'battery' # only titles/handles matching a pattern
+#   .\docs\apps\terminal-cms\scripts\list-articles.ps1                 # all articles + keyword coverage
+#   .\docs\apps\terminal-cms\scripts\list-articles.ps1 -Find 'battery' # only titles/handles matching a pattern
 param([string]$Find)
 
 $ErrorActionPreference = 'Stop'
@@ -16,7 +16,7 @@ Get-Content .env.local | ForEach-Object {
 $secretKey = $cfg.Keys | Where-Object { $_ -match 'CLIENT_SECRET' } | Select-Object -First 1
 $tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" `
   -ContentType 'application/x-www-form-urlencoded' `
-  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg[$secretKey] }
+  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg['SHOPIFY_ADMIN_CLIENT_SECRET'] }
 $headers = @{ 'X-Shopify-Access-Token' = $tok.access_token; 'Content-Type' = 'application/json' }
 
 $q = 'query($after:String){ articles(first:100, after:$after){ pageInfo{ hasNextPage endCursor } nodes{ title handle isPublished publishedAt blog{ handle } } } }'
@@ -30,11 +30,11 @@ do {
   $after = $r.data.articles.pageInfo.endCursor
 } while ($r.data.articles.pageInfo.hasNextPage)
 
-New-Item -ItemType Directory -Force seo-data | Out-Null
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo | Out-Null
 $articles | Select-Object title, handle, isPublished, publishedAt, @{ n = 'blog'; e = { $_.blog.handle } } |
-  Export-Csv .\seo-data\articles.csv -NoTypeInformation -Encoding utf8
+  Export-Csv .\docs\storefronts\blog\seo\articles.csv -NoTypeInformation -Encoding utf8
 
-"Total: $($articles.Count)   Published: $(($articles | Where-Object isPublished).Count)   (saved seo-data\articles.csv)"
+"Total: $($articles.Count)   Published: $(($articles | Where-Object isPublished).Count)   (saved docs\storefronts\blog\seo\articles.csv)"
 $show = if ($Find) { $articles | Where-Object { $_.title -match $Find -or $_.handle -match $Find } } else { $articles }
 $show | Sort-Object title | Format-Table title, handle, isPublished -AutoSize
 

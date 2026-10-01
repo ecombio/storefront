@@ -1,7 +1,7 @@
 # Publishes or unpublishes articles by handle. Preview by default; -Apply writes.
-#   .\cms\set-article-status.ps1 -Handles a,b -Unpublish            # preview
-#   .\cms\set-article-status.ps1 -Handles a,b -Unpublish -Apply     # write
-#   .\cms\set-article-status.ps1 -Handles a,b -Publish -Apply       # reverse
+#   .\docs\apps\terminal-cms\scripts\set-article-status.ps1 -Handles a,b -Unpublish            # preview
+#   .\docs\apps\terminal-cms\scripts\set-article-status.ps1 -Handles a,b -Unpublish -Apply     # write
+#   .\docs\apps\terminal-cms\scripts\set-article-status.ps1 -Handles a,b -Publish -Apply       # reverse
 param([Parameter(Mandatory)][string[]]$Handles, [switch]$Publish, [switch]$Unpublish, [switch]$Apply)
 
 $ErrorActionPreference = 'Stop'
@@ -18,7 +18,7 @@ Get-Content .env.local | ForEach-Object {
 $secretKey = $cfg.Keys | Where-Object { $_ -match 'CLIENT_SECRET' } | Select-Object -First 1
 $tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" `
   -ContentType 'application/x-www-form-urlencoded' `
-  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg[$secretKey] }
+  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg['SHOPIFY_ADMIN_CLIENT_SECRET'] }
 $headers = @{ 'X-Shopify-Access-Token' = $tok.access_token; 'Content-Type' = 'application/json' }
 
 function Get-Articles {
@@ -34,8 +34,8 @@ function Get-Articles {
 }
 
 $articles = Get-Articles
-New-Item -ItemType Directory -Force seo-data\snapshots | Out-Null
-$snap = ".\seo-data\snapshots\articles-status-{0}.json" -f (Get-Date -Format yyyyMMdd-HHmmss)
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo\snapshots | Out-Null
+$snap = ".\docs\storefronts\blog\seo\snapshots\articles-status-{0}.json" -f (Get-Date -Format yyyyMMdd-HHmmss)
 $articles | ConvertTo-Json -Depth 5 | Set-Content $snap -Encoding utf8
 
 $changed = 0

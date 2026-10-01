@@ -1,7 +1,7 @@
 # Read-only content audit of all Shopify blog articles.
 # Run from the repository root (reads .env.local):
-#   .\cms\audit-articles.ps1                 # audit, thin = under 800 words
-#   .\cms\audit-articles.ps1 -ThinWords 1000
+#   .\docs\apps\terminal-cms\scripts\audit-articles.ps1                 # audit, thin = under 800 words
+#   .\docs\apps\terminal-cms\scripts\audit-articles.ps1 -ThinWords 1000
 param([int]$ThinWords = 800)
 
 $ErrorActionPreference = 'Stop'
@@ -16,7 +16,7 @@ Get-Content .env.local | ForEach-Object {
 $secretKey = $cfg.Keys | Where-Object { $_ -match 'CLIENT_SECRET' } | Select-Object -First 1
 $tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" `
   -ContentType 'application/x-www-form-urlencoded' `
-  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg[$secretKey] }
+  -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg['SHOPIFY_ADMIN_CLIENT_SECRET'] }
 $headers = @{ 'X-Shopify-Access-Token' = $tok.access_token; 'Content-Type' = 'application/json' }
 
 $q = 'query($after:String){ articles(first:50, after:$after){ pageInfo{ hasNextPage endCursor } nodes{ title handle tags isPublished publishedAt body image{ url } author{ name } blog{ handle } titleTag: metafield(namespace:"global", key:"title_tag"){ value } descTag: metafield(namespace:"global", key:"description_tag"){ value } } } }'
@@ -51,8 +51,8 @@ $rows = foreach ($a in $nodes) {
   }
 }
 
-New-Item -ItemType Directory -Force seo-data | Out-Null
-$rows | Export-Csv .\seo-data\content-audit.csv -NoTypeInformation -Encoding utf8
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo | Out-Null
+$rows | Export-Csv .\docs\storefronts\blog\seo\content-audit.csv -NoTypeInformation -Encoding utf8
 
 "Articles: $($rows.Count)  Published: $(($rows | Where-Object published).Count)  Avg words: $([int](($rows | Measure-Object words -Average).Average))`n"
 $rows | Sort-Object date | Format-Table date, blog,

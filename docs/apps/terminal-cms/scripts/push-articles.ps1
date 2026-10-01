@@ -1,7 +1,7 @@
 # Pushes edited local articles back to Shopify. Preview by default; -Apply writes.
 # Updates only: body (.html file), title, summary, SEO title, SEO description (.meta.json).
-#   .\cms\push-articles.ps1                      # preview all local articles
-#   .\cms\push-articles.ps1 -Handles a,b -Apply  # write just these
+#   .\docs\apps\terminal-cms\scripts\push-articles.ps1                      # preview all local articles
+#   .\docs\apps\terminal-cms\scripts\push-articles.ps1 -Handles a,b -Apply  # write just these
 param([string[]]$Handles, [switch]$Apply)
 $ErrorActionPreference = 'Stop'
 $shop = 'ecombio.myshopify.com'
@@ -11,7 +11,7 @@ Get-Content .env.local | ForEach-Object {
   if ($_ -match '^\s*([^#=]+?)\s*=\s*"?(.*?)"?\s*$') { $cfg[$matches[1]] = $matches[2] }
 }
 $secretKey = $cfg.Keys | Where-Object { $_ -match 'CLIENT_SECRET' } | Select-Object -First 1
-$tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" -ContentType 'application/x-www-form-urlencoded' -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg[$secretKey] }
+$tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" -ContentType 'application/x-www-form-urlencoded' -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg['SHOPIFY_ADMIN_CLIENT_SECRET'] }
 $headers = @{ 'X-Shopify-Access-Token' = $tok.access_token; 'Content-Type' = 'application/json' }
 function Get-Live {
   $out = @(); $after = $null
@@ -27,7 +27,7 @@ function Get-Live {
 function N($x) { (([string]$x) -replace '\r', '').Trim() }
 $live = @{}
 Get-Live | ForEach-Object { $live[$_.id] = $_ }
-$dir = '.\seo-data\articles'
+$dir = '.\docs\storefronts\blog\seo\articles'
 $plan = @()
 foreach ($mf in (Get-ChildItem $dir -Filter *.meta.json)) {
   $m = Get-Content $mf.FullName -Raw -Encoding utf8 | ConvertFrom-Json
@@ -51,8 +51,8 @@ foreach ($mf in (Get-ChildItem $dir -Filter *.meta.json)) {
 }
 if ($plan.Count -eq 0) { 'Nothing to push. Local files match Shopify.'; return }
 if (-not $Apply) { "PREVIEW ONLY: $($plan.Count) article(s) would change. Add -Apply to write."; return }
-New-Item -ItemType Directory -Force seo-data\snapshots | Out-Null
-$snap = '.\seo-data\snapshots\articles-content-{0}.json' -f (Get-Date -Format yyyyMMdd-HHmmss)
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo\snapshots | Out-Null
+$snap = '.\docs\storefronts\blog\seo\snapshots\articles-content-{0}.json' -f (Get-Date -Format yyyyMMdd-HHmmss)
 $plan | ForEach-Object { $_.before } | ConvertTo-Json -Depth 6 | Set-Content $snap -Encoding utf8
 "Snapshot of current Shopify values: $snap"
 foreach ($p in $plan) {

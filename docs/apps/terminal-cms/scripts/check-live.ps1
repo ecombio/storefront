@@ -1,6 +1,6 @@
 # Fetches every article URL in the live sitemap and reports what the public page serves (read-only).
-#   .\cms\check-live.ps1                         # production
-#   .\cms\check-live.ps1 -Base https://other.example   # another host
+#   .\docs\apps\terminal-cms\scripts\check-live.ps1                         # production
+#   .\docs\apps\terminal-cms\scripts\check-live.ps1 -Base https://other.example   # another host
 param([string]$Base = 'https://ecombio.com')
 
 $ErrorActionPreference = 'Stop'
@@ -30,11 +30,11 @@ $rows = foreach ($u in $urls) {
   }
 }
 $floor = ($rows | Measure-Object words -Minimum).Minimum
-New-Item -ItemType Directory -Force seo-data | Out-Null
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo | Out-Null
 $rows | Select-Object status, noindex, @{ n = 'contentWords'; e = { $_.words - $floor } }, h1, titleLen, descLen, title, page |
-  Export-Csv .\seo-data\live-check.csv -NoTypeInformation -Encoding utf8
+  Export-Csv .\docs\storefronts\blog\seo\live-check.csv -NoTypeInformation -Encoding utf8
 
-"Pages: $($rows.Count)   noindex: $(($rows | Where-Object noindex).Count)   non-200: $(($rows | Where-Object { $_.status -ne 200 }).Count)   (saved seo-data\live-check.csv)"
+"Pages: $($rows.Count)   noindex: $(($rows | Where-Object noindex).Count)   non-200: $(($rows | Where-Object { $_.status -ne 200 }).Count)   (saved docs\storefronts\blog\seo\live-check.csv)"
 "status  words  h1  title desc  page"
 $rows | Sort-Object words | ForEach-Object {
   '{0}  {1,5}  {2,-3} {3,4} {4,4}  {5}' -f $_.status, ($_.words - $floor), $(if ($_.h1) { 'y' } else { 'N' }), $_.titleLen, $_.descLen, $_.page

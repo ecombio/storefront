@@ -1,7 +1,7 @@
-# Pulls article bodies from Shopify into seo-data\articles\ (read-only on Shopify).
-#   .\cms\pull-articles.ps1                    # every article with 30+ words of body
-#   .\cms\pull-articles.ps1 -Handles a,b       # only these (even if empty)
-#   .\cms\pull-articles.ps1 -Force             # overwrite local files that already exist
+# Pulls article bodies from Shopify into docs\storefronts\blog\seo\articles\ (read-only on Shopify).
+#   .\docs\apps\terminal-cms\scripts\pull-articles.ps1                    # every article with 30+ words of body
+#   .\docs\apps\terminal-cms\scripts\pull-articles.ps1 -Handles a,b       # only these (even if empty)
+#   .\docs\apps\terminal-cms\scripts\pull-articles.ps1 -Force             # overwrite local files that already exist
 param([string[]]$Handles, [switch]$Force)
 $ErrorActionPreference = 'Stop'
 $shop = 'ecombio.myshopify.com'
@@ -11,7 +11,7 @@ Get-Content .env.local | ForEach-Object {
   if ($_ -match '^\s*([^#=]+?)\s*=\s*"?(.*?)"?\s*$') { $cfg[$matches[1]] = $matches[2] }
 }
 $secretKey = $cfg.Keys | Where-Object { $_ -match 'CLIENT_SECRET' } | Select-Object -First 1
-$tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" -ContentType 'application/x-www-form-urlencoded' -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg[$secretKey] }
+$tok = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/oauth/access_token" -ContentType 'application/x-www-form-urlencoded' -Body @{ grant_type = 'client_credentials'; client_id = $cfg['SHOPIFY_ADMIN_CLIENT_ID']; client_secret = $cfg['SHOPIFY_ADMIN_CLIENT_SECRET'] }
 $headers = @{ 'X-Shopify-Access-Token' = $tok.access_token; 'Content-Type' = 'application/json' }
 $out = @(); $after = $null
 do {
@@ -21,7 +21,7 @@ do {
   $out += $r.data.articles.nodes
   $after = $r.data.articles.pageInfo.endCursor
 } while ($r.data.articles.pageInfo.hasNextPage)
-$dir = '.\seo-data\articles'
+$dir = '.\docs\storefronts\blog\seo\articles'
 New-Item -ItemType Directory -Force $dir | Out-Null
 $n = 0
 foreach ($a in $out) {

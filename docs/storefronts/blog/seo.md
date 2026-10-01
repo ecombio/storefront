@@ -28,7 +28,7 @@ The goal is 100 blog posts. State as of 2026-09-30:
 | Author          | `custom.author_profile` (type `mixed_reference`) plus staff author |
 | Body            | Article `body`, written to the rules in `articles.md`              |
 
-`cms/create-draft-posts.ps1` sets all of these when it creates a draft. If the SEO metafields ever cause an error, set `$withSeo = $false` in that script and add the SEO text in Shopify admin instead.
+`docs/apps/terminal-cms/scripts/create-draft-posts.ps1` sets all of these when it creates a draft. If the SEO metafields ever cause an error, set `$withSeo = $false` in that script and add the SEO text in Shopify admin instead.
 
 ## Per-post checklist
 
@@ -139,7 +139,7 @@ An earlier plan description used different names ("Everything in Starter, plus":
 2. Pick topics by volume against difficulty, grouped by cluster: scooters, e-bikes, skateboards, one-wheel boards.
 3. Check each topic against the tracking table for overlap.
 4. Write the drafts, one primary keyword each, with SEO title and description built around it.
-5. Create them as drafts with `cms/create-draft-posts.ps1` (preview first, then `-Apply`).
+5. Create them as drafts with `docs/apps/terminal-cms/scripts/create-draft-posts.ps1` (preview first, then `-Apply`).
 6. Review in Shopify admin, add featured images, then publish.
 7. Check the live URLs return 200, and add the keywords to Position Tracking.
 8. Update the tracking table and the counts in `terminal-cms.md`.

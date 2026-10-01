@@ -2,7 +2,7 @@
 
 Minimum requirements must be true before the site is promoted. Recommended requirements improve the store but can wait. Tick items off as they are done.
 
-Related docs: `docs/requirements.md`, `docs/prd.md`, `docs/articles.md`, `docs/pages.md`, `README.md`.
+Related docs: `docs/requirements.md`, `docs/storefronts/prd.md`, `docs/references/articles.md`, `docs/references/pages.md`, `README.md`.
 
 ## Phase 1: Now (minimum requirements)
 
@@ -12,7 +12,7 @@ Goal: nothing customers see is false, broken, or unfinished.
 
 - [ ] Progress line works on a live article. Check: `<html>` has `data-reading`, and `--reading-progress` rises from 0 and reaches 1 at the end of the article body.
 - [ ] Back-to-top appears at about 40% scroll and works from the keyboard.
-- [ ] `docs/articles.md` includes the new blog features. Check: `Select-String -Path docs/articles.md -Pattern "Back to top"` returns a match.
+- [ ] `docs/references/articles.md` includes the new blog features. Check: `Select-String -Path docs/references/articles.md -Pattern "Back to top"` returns a match.
 
 ### 1.2 Customer-facing honesty
 

@@ -1,8 +1,8 @@
 # Sorts a competitor sitemap CSV (needs a "loc" column) into topic candidates. Read-only research helper.
-# Save the sitemap as seo-data\competitor-sitemap.csv, then run from the repo root:
-#   .\cms\competitor-topics.ps1                  # theme counts, writes seo-data\competitor-topics.csv
-#   .\cms\competitor-topics.ps1 -Theme laws      # list candidates for one theme
-param([string]$Csv = '.\seo-data\competitor-sitemap.csv', [string]$Theme)
+# Save the sitemap as docs\storefronts\blog\seo\competitor-sitemap.csv, then run from the repo root:
+#   .\docs\apps\terminal-cms\scripts\competitor-topics.ps1                  # theme counts, writes docs\storefronts\blog\seo\competitor-topics.csv
+#   .\docs\apps\terminal-cms\scripts\competitor-topics.ps1 -Theme laws      # list candidates for one theme
+param([string]$Csv = '.\docs\storefronts\blog\seo\competitor-sitemap.csv', [string]$Theme)
 
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path $Csv)) { throw "Not found: $Csv" }
@@ -24,8 +24,8 @@ function Get-Tokens([string]$s) {
   @($s.ToLower() -split '[^a-z0-9]+' | Where-Object { $_ -and $_.Length -gt 2 -and $stop -notcontains $_ } | Sort-Object -Unique)
 }
 $existing = @()
-if (Test-Path .\seo-data\articles.csv) {
-  $existing = Import-Csv .\seo-data\articles.csv | ForEach-Object { [pscustomobject]@{ Title = $_.title; Tokens = (Get-Tokens $_.title) } }
+if (Test-Path .\docs\storefronts\blog\seo\articles.csv) {
+  $existing = Import-Csv .\docs\storefronts\blog\seo\articles.csv | ForEach-Object { [pscustomobject]@{ Title = $_.title; Tokens = (Get-Tokens $_.title) } }
 }
 function Get-Similar([string[]]$t) {
   $best = ''; $bestScore = 0
@@ -50,9 +50,9 @@ $rows = Import-Csv $Csv | Sort-Object loc -Unique | Where-Object { $_.loc -match
 }
 
 $rows = @($rows | Sort-Object slug -Unique)
-New-Item -ItemType Directory -Force seo-data | Out-Null
-$rows | Export-Csv .\seo-data\competitor-topics.csv -NoTypeInformation -Encoding utf8
-"Posts: $($rows.Count)   Candidates: $(($rows | Where-Object action -eq 'candidate').Count)   (saved seo-data\competitor-topics.csv)`n"
+New-Item -ItemType Directory -Force docs\storefronts\blog\seo | Out-Null
+$rows | Export-Csv .\docs\storefronts\blog\seo\competitor-topics.csv -NoTypeInformation -Encoding utf8
+"Posts: $($rows.Count)   Candidates: $(($rows | Where-Object action -eq 'candidate').Count)   (saved docs\storefronts\blog\seo\competitor-topics.csv)`n"
 if ($Theme) {
   $rows | Where-Object { $_.theme -eq $Theme -and $_.action -eq 'candidate' } | Sort-Object topic |
     Format-Table topic, @{ n = 'overlaps'; e = { $_.overlapsExisting } } -AutoSize
