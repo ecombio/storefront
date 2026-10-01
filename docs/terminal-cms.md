@@ -58,20 +58,20 @@ $q = 'query { shop { name } }'
 
 ## Scopes
 
-| Area | Access |
-| --- | --- |
+| Area                                      | Access         |
+| ----------------------------------------- | -------------- |
 | Store content (blogs, articles, comments) | read and write |
-| Files | read and write |
-| Online store pages | read and write |
-| Navigation (menus) | read and write |
-| Metaobjects | read and write |
-| Metaobject definitions | read only |
-| Translations | read and write |
-| Legal policies | read and write |
-| Locales | read only |
-| Products | read only |
-| Markets | read only |
-| Reports | read only |
+| Files                                     | read and write |
+| Online store pages                        | read and write |
+| Navigation (menus)                        | read and write |
+| Metaobjects                               | read and write |
+| Metaobject definitions                    | read only      |
+| Translations                              | read and write |
+| Legal policies                            | read and write |
+| Locales                                   | read only      |
+| Products                                  | read only      |
+| Markets                                   | read only      |
+| Reports                                   | read only      |
 
 ### Deliberately excluded
 
@@ -83,25 +83,25 @@ What the app can do follows directly from its scopes. All of it is done through 
 
 ### Can read and change
 
-| Area | What it can do |
-| --- | --- |
+| Area                 | What it can do                                                                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Blog posts and blogs | Edit titles, body HTML, authors, summaries, tags, featured images, SEO fields, handles, and publish status. Publish or unpublish in bulk. Read and moderate comments. |
-| Pages | Create, edit, and bulk-update content pages |
-| Menus (navigation) | View and edit navigation menus and their items. Redirects may fall under this scope as well, but this is unconfirmed, so test before relying on it. |
-| Files | List, upload, and update media, including alt text |
-| Metaobjects | Create and edit entries of existing types, such as author bios or FAQs |
-| Translations | Read and write translated content for the locales enabled on the store |
-| Legal policies | Edit the privacy, refund, terms, and similar policy pages |
+| Pages                | Create, edit, and bulk-update content pages                                                                                                                           |
+| Menus (navigation)   | View and edit navigation menus and their items. Redirects may fall under this scope as well, but this is unconfirmed, so test before relying on it.                   |
+| Files                | List, upload, and update media, including alt text                                                                                                                    |
+| Metaobjects          | Create and edit entries of existing types, such as author bios or FAQs                                                                                                |
+| Translations         | Read and write translated content for the locales enabled on the store                                                                                                |
+| Legal policies       | Edit the privacy, refund, terms, and similar policy pages                                                                                                             |
 
 ### Read only
 
-| Area | What it can do |
-| --- | --- |
-| Products | Audit titles, descriptions, tags, and SEO fields without changing anything |
-| Metaobject definitions | Inspect the structure of custom content types, but not alter it |
-| Locales | See which languages are enabled |
-| Markets | See configured regions |
-| Reports | Pull report data |
+| Area                   | What it can do                                                             |
+| ---------------------- | -------------------------------------------------------------------------- |
+| Products               | Audit titles, descriptions, tags, and SEO fields without changing anything |
+| Metaobject definitions | Inspect the structure of custom content types, but not alter it            |
+| Locales                | See which languages are enabled                                            |
+| Markets                | See configured regions                                                     |
+| Reports                | Pull report data                                                           |
 
 ### Cannot do
 
@@ -158,6 +158,7 @@ After a write, content may stay cached on the storefront. See the caching notes 
 Both affect how the storefront builds pages, so check them before bulk edits. Details are in the "Categories and tags" and "Authors" sections of [`articles.md`](./articles.md).
 
 **Tags**
+
 - A blog is a category. Tags are not categories, and moving a post between blogs changes its category.
 - Tag chips on a category page are built from the 12 most common tags on that category's articles, and each chip links to a tag page.
 - Tag URLs are case-insensitive, so `Running` and `running` share a page. Keep one spelling per tag anyway.
@@ -166,6 +167,7 @@ Both affect how the storefront builds pages, so check them before bulk edits. De
 - A post with no tags still works but appears on no tag page.
 
 **Authors**
+
 - Authors are **Author** metaobject entries (fields: name, role, bio, photo). Each entry's handle is its URL: `/blogs/author/{handle}`.
 - Each post points to its author through the `custom.author_profile` metafield. The staff Author field is only a fallback.
 - The author page shows the photo, role, and bio from the author's **newest** post, so set `author_profile` on every post a person writes.
@@ -297,6 +299,7 @@ Reusable scripts live in `cms/` at the repo root. Run them from the repository r
 ```
 
 One-off runbook scripts (tag plans, tag normalization) stay inline in this file.
+
 ## Working conventions
 
 1. **Preview before applying.** Bulk scripts use an `$apply = $false` flag by default. They print every change they would make, and nothing is written until the flag is set to `$true` and the script is run again.
@@ -306,12 +309,14 @@ One-off runbook scripts (tag plans, tag normalization) stay inline in this file.
 ## Changing the app
 
 **Add or remove scopes**
+
 1. In the Dev Dashboard, open the app, go to **Versions**, and create a new version.
 2. Edit the required **Scopes** field (leave **Optional scopes** empty) and release the version.
 3. Approve the updated permissions on the store, or uninstall and reinstall the app.
 4. Get a new token and check `$resp.scope`. Old tokens do not gain new scopes.
 
 **Rotate the client secret**
+
 1. Rotate it in the app's **Settings** in the Dev Dashboard.
 2. Update `SHOPIFY_ADMIN_CLIENT_SECRET` in `.env.local`.
 3. Get a new token to confirm it works.
@@ -328,11 +333,12 @@ Rotate immediately if the secret is ever exposed.
 
 Last audit of the store's articles (update this section after each job):
 
-- **56 articles** across five blogs: Articles, Athletes, Authors, Category, and cycling. About 20 of them look like template or demo posts (for example Button, Quote, Images Gallery, Recipe Header, Table of Contents, Social Share, FAQ Section). They have no tags, and they should stay untagged. Check whether they are published.
+- **56 articles** across five blogs: Articles, Athletes, Authors, Category, and cycling. About 20 of them look like template or demo posts (for example Button, Quote, Images Gallery, Recipe Header, Table of Contents, Social Share, FAQ Section). They have no tags, and they should stay untagged. Audit on 2026-09-30: all 56 were published (Articles 35, Athletes 2, Authors 1, Category 4, cycling 14), so the template posts are live on the storefront.
 - **Tags in use** (earlier count): `electric-scooters` 15, `cycling` 4, `electric-scooter-buying-guide` 4, `Cycling Guides` 1, `cycling-1` 1, `electric-mountain-bikes` 1, `Scootering` 1, `Stretching & Mobility` 1. Spellings are mixed between hyphenated and readable names. `articles.md` recommends readable, consistent names.
 - **Phase 1 (fixes and additions) was applied and verified on 2026-09-30:** 15 articles updated. Tag counts now: `electric-scooters` 26, `electric-scooter-buying-guide` 11, `cycling` 2, `Cycling Guides` 2, `Scootering` 2, `electric-mountain-bikes` 1. `cycling-1` and `Stretching & Mobility` are gone. A snapshot of the state before phase 1 was saved in the user's temp folder as `articles-snapshot-20260930-213826.json`.
 
 **Wrong tags found (all fixed in phase 1 except Customer Support):**
+
 - The 2026 Best Electric Scooters Guide has `cycling-1`, and the Electric Scooter Buying Guide has `electric-mountain-bikes`.
 - Electric Scooter Accessories and Electric Scooter Parts have `cycling`.
 - Best Electric Bike Guide has `Stretching & Mobility`.
@@ -341,6 +347,7 @@ Last audit of the store's articles (update this section after each job):
 **Untagged real content:** about ten scooter and e-bike posts, tagged in phase 1.
 
 **Open tasks:**
+
 1. Confirm the proposed plan, then run it in preview and apply modes.
 2. Phase 2: normalize the tag spellings with the map script in "Updating tags (runbook)", then update the counts in this section.
 3. Decide the final readable spellings and normalize them (for example `electric-scooters` to `Electric Scooters`). Tag URLs do not change for case and spacing changes, so this is cosmetic.
@@ -349,4 +356,4 @@ Last audit of the store's articles (update this section after each job):
 6. Add `terminal-cms.md` and `cms.md` to the related docs lists in `roadmap.md` and `README.md`.
 7. Move any hardcoded tag links inside post bodies if tag URLs change. A scan for `/blogs/tag/` in post bodies has not been run yet.
 8. Review and publish the three drafts made by `cms/create-draft-posts.ps1`. They don't count toward the 100-post goal until published. The new `Electric Bikes` tag creates `/blogs/tag/electric-bikes`.
-9. Update the article counts in this section from the audit, and decide whether the 100-post goal counts only real published posts.
+9. Decide whether the 100-post goal counts only real published posts.

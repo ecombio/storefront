@@ -13,7 +13,7 @@ $shop       = 'ecombio.myshopify.com'
 $url        = "https://$shop/admin/api/2025-01/graphql.json"
 $authorName = 'Lannay Dale-Tooze'
 $authorId   = 'gid://shopify/Metaobject/610756690134'
-$withSeo = $false
+$withSeo = $true
 
 # ---------- Credentials and token ----------
 if (-not (Test-Path .env.local)) { throw 'Run this from the repository root. .env.local was not found.' }
@@ -234,7 +234,7 @@ foreach ($d in $drafts) {
 
   if (-not $Apply) { continue }
 
-  $mf = @(@{ namespace = 'custom'; key = 'author_profile'; type = 'metaobject_reference'; value = $authorId })
+  $mf = @(@{ namespace = 'custom'; key = 'author_profile'; type = 'mixed_reference'; value = $authorId })
   if ($withSeo) {
     $mf += @{ namespace = 'global'; key = 'title_tag';       type = 'single_line_text_field'; value = $d.seoTitle }
     $mf += @{ namespace = 'global'; key = 'description_tag'; type = 'single_line_text_field'; value = $d.seoDesc }

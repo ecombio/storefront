@@ -54,10 +54,12 @@ function renderNode(node: RichNode): ReactNode {
 }
 
 export function RichText({ value }: { value: string }) {
+  let root: RichNode | undefined;
   try {
-    const root = JSON.parse(value) as RichNode;
-    return <div className="grid gap-4">{renderNodes(root.children)}</div>;
+    root = JSON.parse(value) as RichNode;
   } catch {
-    return <p>{value}</p>;
+    root = undefined;
   }
+  if (!root) return <p>{value}</p>;
+  return <div className="grid gap-4">{renderNodes(root.children)}</div>;
 }
