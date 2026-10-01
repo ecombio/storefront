@@ -16,11 +16,11 @@ Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with N
 
 Pushes to `main` deploy to production on Vercel automatically, so only push work you are happy to publish.
 
-Open PowerShell, change the message on the first line, and paste the whole block. Paste only the commands, never the `PS C:\...>` prompt, and never paste a token or secret anywhere, including chat.
+Open PowerShell and paste the whole block. It asks for the commit message. Paste only the commands, never the `PS C:\...>` prompt, and never paste a token or secret anywhere, including chat.
 
 ```powershell
 & {
-  $msg = "Describe the change"   # <-- edit this line
+  $msg = Read-Host "Commit message"
 
   Set-Location C:\Users\Admin\Ecombio\Storefront
 
@@ -207,10 +207,14 @@ Values live in Vercel (Production and Preview) and `.env.local`, never in git. M
 - **Product pages:** variant choices are in the URL. Data is cached and refreshed by Shopify webhooks, so edits can lag until webhooks are registered. Bundles and complementary products show nothing until they exist in Shopify. The delivery estimate line renders under the price (see ZIP code and delivery estimate).
 - **Collections and search:** `/collections/[handle]` and `/search` have no toggles. Results are live, not cached. Collections and products must be published to the Headless channel. Filters come from Shopify Search & Discovery. Batch size is `PRODUCTS_PER_PAGE` in `lib/collections/index.ts`. Collection pages also have an Expert Advice tab, a sub-collection carousel, and a product count (see Collection page extras).
 - **Product card:** one shared tile for every grid, so a visual change affects every page. Assign an image to each color variant in Shopify so filtered cards show the matching color.
-- **Content pages:** Shopify Pages at `/pages/[handle]`, policies at `/policies/[handle]`, blogs at `/blogs/[blogHandle]`. Edit them in Shopify. The webhook handler does not refresh them, so edits can stay cached. There is no `/blogs` index; link to a specific blog. Unknown handles return a 404.
-- **Navigation:** the header has a single Shop link in code, plus search, cart, the ZIP button, and the account link. To manage menus in Shopify instead, use the `/vercel-shop:enable-shopify-menus` skill from a coding agent, then review the diff and test before pushing.
+- **Content pages:** Shopify Pages at `/pages/[handle]`, policies at `/policies/[handle]`, blogs at `/blogs/category/[categoryHandle]` and `/blogs/articles/[articleHandle]` (the old `/blogs/[blogHandle]` URLs redirect; see `docs/articles.md`). Edit them in Shopify. The webhook handler does not refresh them, so edits can stay cached. There is no `/blogs` index; link to a specific blog. Unknown handles return a 404.
+- **Navigation:** the header reads the Shopify `main-menu` (falls back to a single Shop link), with a utility bar, search, cart, ZIP button, and account link. The utility and extra links are hardcoded in `components/nav/index.tsx`. On article pages a reading-progress line runs along the header's bottom edge.
 - **Footer:** the store name and a link to every Shopify policy that has content. Social links and menu columns are optional.
 - **Cart and checkout:** one Shopify cart is used everywhere and remembered in the browser for up to 14 days. Shopify decides prices, discounts, and availability, and hosts checkout.
+
+## Blog
+
+Articles are written in Shopify and use shortcodes for accordions, buttons, and product strips. See `docs/articles.md` for the writer guide and developer notes, and `docs/pages.md` for how each route maps to a Shopify template.
 
 ## Checkout domain
 
@@ -271,6 +275,8 @@ Done:
 - [x] Webhooks: product and collection webhooks registered in Shopify (JSON, API version 2026-07) to https://ecombio.com/api/webhooks/shopify; SHOPIFY_WEBHOOK_SECRET set in Production; unsigned requests return 401
 - [x] ZIP code modal with switch country view, and delivery estimate line under the product price (placeholder numbers)
 - [x] Collection pages: Products / Expert Advice tabs, sub-collection carousel, product count
+- [x] Blog articles: left-aligned header with tag chips, full-width hero, Contents sidebar, back-to-top button, header reading-progress line, "You may like" cards
+- [x] Docs: `docs/articles.md` (writing articles) and `docs/pages.md` (routes and Shopify template map)
 
 Remaining:
 
@@ -283,6 +289,7 @@ Remaining:
 - [ ] Branded checkout domain: finish `checkout.ecombio.com` (see Checkout domain)
 - [ ] Product pages: set up bundles and complementary products in Shopify, or disable their flags in `lib/config/index.ts`
 - [ ] Home page: check the headline copy and which eight products show; consider featuring a collection
+- [ ] Blog: set `author_profile` on every post, add featured images, unpublish test posts (such as "BLOGGLE")
 - [ ] Content: fill in every store policy, check the footer links, and confirm edits (such as the contact-information email) appear on the live site
 - [ ] Shopify fixes: product description typo, confirm collections are published to Headless
 - [ ] DNS: DMARC record and the `store.ecombio.com` proxy setting
@@ -294,6 +301,6 @@ Later / optional:
 
 - [ ] Shop Agent (card on file in Vercel AI Gateway, spending limits, bot protection)
 - [ ] Vercel Web Analytics
-- [ ] Shopify-managed navigation and footer menus
+- [ ] Shopify-managed footer menus (the header already reads `main-menu`)
 - [ ] Multiple languages or regions (see Languages and regions)
 - [ ] "Pairs Well With" products and bundles in Shopify
