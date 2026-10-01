@@ -18,7 +18,7 @@ If you are an AI assistant reading this file, this is everything you need to con
 - **You cannot run commands.** Write PowerShell blocks for the user to run, and ask them to paste back only the output.
 - **Never ask for or accept secrets.** If a secret is pasted, tell the user to rotate it.
 - **Rules for every write job:** read current data first (paginate), save a snapshot, match items by ID, preview old → new with `$apply = $false`, apply only after the user confirms the preview, check `userErrors`, then read again to verify. Do not send `body` unless the job requires it.
-- **Format source of truth:** `docs/articles.md` (shortcodes, URLs, tags, authors). `docs/cms.md` holds general content rules. `docs/pages.md` maps routes to Shopify templates.
+- **Format source of truth:** `docs/articles.md` (shortcodes, URLs, tags, authors). `docs/cms.md` holds general content rules. `docs/pages.md` maps routes to Shopify templates. `docs/seo.md` covers SEO fields, keyword targeting, Semrush, and audits.
 - **Session start:** the user runs the token block in "Getting a token" and confirms `$resp.scope`. Tokens expire, so repeat this in any new session.
 - **Where things stand:** see "Current state and open work" at the end of this file.
 
@@ -304,28 +304,9 @@ If PowerShell blocks a script as not digitally signed, run `Set-ExecutionPolicy 
 
 One-off runbook scripts (tag plans, tag normalization) stay inline in this file.
 
-## SEO data (Semrush)
+## SEO data
 
-Semrush data is used to choose blog topics by search demand and difficulty instead of guesswork. Status as of 2026-09-30: the Semrush connector is available in Claude's directory but is not connected yet. Without it, export CSVs from Semrush and attach them in the chat.
-
-Plan features under consideration (the tier above Starter; the plan name and price were not confirmed, so check Semrush's pricing page before buying):
-
-- Tracking: monitor 100 prompts and 1,500 keywords daily
-- Historical data: view SEO ranking trends since 2012
-- Content optimization: create better content with AI
-- Multi-targeting: track multiple locations or search engines
-- Keyword cannibalization: resolve competing pages
-
-Findings on which features matter for the 100-post goal:
-
-- **Most useful: keyword cannibalization.** The blog already has overlapping scooter guides (Best Commuter, For Adults, Under $1000, For Heavy Riders, Foldable for Commute). Adding about 70 more posts raises the risk of our own pages competing for the same searches, so check new topics against existing posts before writing them.
-- **Useful once posts are live: daily keyword tracking.** 1,500 keywords covers about 100 posts at 3 to 5 keywords each. The 100 prompt slots track whether AI search tools mention the store.
-- **Not needed now:** content optimization with AI (posts are already drafted through `cms/create-draft-posts.ps1`), multi-targeting (only useful when selling in several countries or caring about engines beyond Google), and history since 2012 (good for studying competitors, not needed to pick the next topics).
-- A trial or CSV exports from any plan are enough to plan the first batch.
-
-Exports that help: Keyword Magic Tool results for scooter, e-bike, and electric skateboard terms; Organic Research for `ecombio.com`; Keyword Gap against two or three competitors.
-
-How it feeds the workflow: each new draft targets one keyword, its SEO title and description are written around that keyword, and topics are ordered by volume against difficulty.
+Semrush plans, keyword targeting, and SEO audits are in [`seo.md`](./seo.md).
 
 ## Working conventions
 
